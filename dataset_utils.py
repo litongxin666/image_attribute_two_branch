@@ -29,7 +29,7 @@ class DatasetLoader:
         #sent_feats = np.array(data_sent['text_features']).astype(np.float32).transpose()
         #print('Loaded sentence feature shape:', sent_feats.shape)
 
-        train ,query, gallery = import_MarketDuke_nodistractors('/home/litongxin/Market-1501')
+        #train ,query, gallery = import_MarketDuke_nodistractors('/home/litongxin/Market-1501')
         train_attr, test_attr, self.label = import_Market1501Attribute_binary('/home/litongxin')
 
         self.split = split
