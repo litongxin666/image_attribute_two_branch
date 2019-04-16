@@ -38,13 +38,13 @@ def embedding_loss(im_embeds, sent_embeds, im_labels, args):
     num_attr=args.batch_size
     num_img=num_attr*img_attr_ratio
     #print(im_labels[0])
-    print(im_labels.shape)
-    print("img",im_embeds.shape)
-    print("sent",sent_embeds)
+    #print(im_labels.shape)
+    #print("img",im_embeds.shape)
+    #print("sent",sent_embeds)
 
 
     sent_im_dist = pdist(im_embeds, sent_embeds)
-    print(sent_im_dist.shape)
+    #print(sent_im_dist.shape)
     # attribute loss: image, positive attribute, and negative attribute
     pos_pair_dist = tf.reshape(tf.boolean_mask(sent_im_dist, im_labels), [num_img, 1])
     neg_pair_dist = tf.reshape(tf.boolean_mask(sent_im_dist, ~im_labels), [num_img, -1])

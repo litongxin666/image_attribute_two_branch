@@ -19,8 +19,8 @@ def main(_):
     num_attr, attr_feat_dim = data_loader.attr_feat_shape
     steps_per_epoch = num_ims // FLAGS.batch_size
     num_steps = steps_per_epoch * FLAGS.max_num_epoch
-    print("image_shape",data_loader.im_feat_shape)
-    print("attr_shape",data_loader.attr_feat_shape)
+    #print("image_shape",data_loader.im_feat_shape)
+    #print("attr_shape",data_loader.attr_feat_shape)
 
     # Setup placeholders for input variables.
     im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     # Training parameters.
     parser.add_argument('--batch_size', type=int, default=500, help='Batch size for training.')
     parser.add_argument('--sample_size', type=int, default=2, help='Number of positive pair to sample.')
-    parser.add_argument('--max_num_epoch', type=int, default=20, help='Max number of epochs to train.')
+    parser.add_argument('--max_num_epoch', type=int, default=40, help='Max number of epochs to train.')
     parser.add_argument('--num_neg_sample', type=int, default=10, help='Number of negative example to sample.')
     parser.add_argument('--margin', type=float, default=0.05, help='Margin.')
     parser.add_argument('--im_loss_factor', type=float, default=1.5,
