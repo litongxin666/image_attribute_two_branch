@@ -19,6 +19,8 @@ def main(_):
     num_sents, sent_feat_dim = data_loader.attr_feat_shape
     steps_per_epoch = num_ims // FLAGS.batch_size
     num_steps = steps_per_epoch * FLAGS.max_num_epoch
+    print("image_shape",data_loader.im_feat_shape)
+    print("attr_shape",data_loader.attr_feat_shape)
 
     # Setup placeholders for input variables.
     im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, im_feat_dim])
