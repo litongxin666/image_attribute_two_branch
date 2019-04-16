@@ -1,8 +1,8 @@
 import os
 from .import_Market1501 import *
-from .reiddataset_downloader import *
+#from .reiddataset_downloader import *
 import scipy.io
-
+import numpy as np
 
 def import_Market1501Attribute(dataset_dir):
     dataset_name = 'Market-1501/attribute'

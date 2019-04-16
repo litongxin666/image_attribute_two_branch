@@ -5,10 +5,10 @@ warnings.filterwarnings('ignore','.*conversion.*')
 import os
 import zipfile
 import shutil
-import requests
+#import requests
 import h5py
 import numpy as np
-from PIL import Image
+#from PIL import Image
 import argparse
 from .gdrive_downloader import gdrive_downloader
 from .cuhk03_to_image import cuhk03_to_image

@@ -6,12 +6,12 @@ import numpy as np
 from scipy.io import loadmat
 
 import os
-from PIL import Image
-import numpy as np
-from torchvision import transforms as T
-from reid_dataset import import_MarketDuke_nodistractors
-from reid_dataset import import_Market1501Attribute_binary
-from reid_dataset import import_DukeMTMCAttribute_binary
+#from PIL import Image
+#import numpy as np
+#from torchvision import transforms as T
+#from datafolder.reid_dataset import import_MarketDuke_nodistractors
+from datafolder.reid_dataset import import_Market1501Attribute_binary
+#from datafolder.reid_dataset import import_DukeMTMCAttribute_binary
 
 class DatasetLoader:
     """ Dataset loader class that loads feature matrices from given paths and
@@ -20,7 +20,7 @@ class DatasetLoader:
     def __init__(self, im_feat_path, sent_feat_path, split='train'):
         print('Loading image features from', im_feat_path)
         data_im = loadmat(im_feat_path)
-        im_feats = np.array(data_im['img_feature']).astype(np.float32)
+        im_feats = np.array(data_im['img_feat']).astype(np.float32)
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
         #data_sent = h5py.File(sent_feat_path)
@@ -29,15 +29,18 @@ class DatasetLoader:
         #sent_feats = np.array(data_sent['text_features']).astype(np.float32).transpose()
         #print('Loaded sentence feature shape:', sent_feats.shape)
 
-        train ,query, gallery = import_MarketDuke_nodistractors('/home/litongxin/Market-1501')
+        #train ,query, gallery = import_MarketDuke_nodistractors('/home/litongxin/Market-1501')
         train_attr, test_attr, self.label = import_Market1501Attribute_binary('/home/litongxin')
 
         self.split = split
         self.im_feat_shape = im_feats.shape
-        self.attr_feat_shape = np.array(train_attr.values()).shape
-        self.img_inds = range(len(im_feats)) # we will shuffle this every epoch for training
+        #print(train_attr.values().shape)
+        self.attr_feat_shape = np.array(list(train_attr.values())).shape
+        self.img_inds = list(range(len(im_feats))) # we will shuffle this every epoch for training
         self.im_feats = im_feats
         self.attr_feats = train_attr
+        #print(self.attr_feats)
+        print(self.attr_feat_shape)
         #self.sent_feats = sent_feats
         # Assume the number of sentence per image is a constant.
         #self.sent_im_ratio = len(sent_feats) // len(im_feats)
