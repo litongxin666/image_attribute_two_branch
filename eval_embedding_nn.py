@@ -27,10 +27,10 @@ def eval_once(data_loader, saver, placeholders, recall):
         print('Done')
 
         # For testing and validation, there should be only one batch with index 0.
-        im_feats, sent_feats, labels = data_loader.get_batch(0, FLAGS.batch_size, FLAGS.sample_size)
+        im_feats, attr_feats, labels = data_loader.get_batch(0, FLAGS.batch_size, FLAGS.sample_size)
         feed_dict = {
                 placeholders['im_feat'] : im_feats,
-                placeholders['sent_feat'] : sent_feats,
+                placeholders['attr_feat'] : attr_feats,
                 placeholders['label'] : labels,
                 placeholders['train_phase'] : False,
         }
@@ -43,22 +43,23 @@ def main(_):
     # Load data.
     data_loader = DatasetLoader(FLAGS.image_feat_path, FLAGS.sent_feat_path, split='eval')
     num_ims, im_feat_dim = data_loader.im_feat_shape
-    num_sents, sent_feat_dim = data_loader.sent_feat_shape
+    #num_sents, sent_feat_dim = data_loader.sent_feat_shape
+    num_attr, attr_feat_dim = data_loader.attr_test_feat_shape
 
     # Setup placeholders for input variables.
-    im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, im_feat_dim])
-    sent_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, sent_feat_dim])
+    im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
     label_plh = tf.placeholder(tf.bool, shape=[FLAGS.batch_size * FLAGS.sample_size, FLAGS.batch_size])
     train_phase_plh = tf.placeholder(tf.bool)
     placeholders = {
         'im_feat' : im_feat_plh,
-        'sent_feat' : sent_feat_plh,
+        'attr_feat' : attr_feat_plh,
         'label' : label_plh,
         'train_phase' : train_phase_plh,
     }
 
     # Setup testing operation.
-    recall = setup_eval_model(im_feat_plh, sent_feat_plh, train_phase_plh, label_plh)
+    recall = setup_eval_model(im_feat_plh, attr_feat_plh, train_phase_plh, label_plh)
 
     # Setup checkpoint saver.
     saver = tf.train.Saver(save_relative_paths=True)

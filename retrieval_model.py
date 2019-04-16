@@ -72,7 +72,7 @@ def recall_k(im_embeds, sent_embeds, im_labels, ks=None):
     """
         Compute recall at given ks.
     """
-    sent_im_dist = pdist(sent_embeds, im_embeds)
+    sent_im_dist = pdist(im_embeds, sent_embeds)
     def retrieval_recall(dist, labels, k):
         # Use negative distance to find the index of
         # the smallest k elements in each row.

@@ -37,9 +37,11 @@ class DatasetLoader:
         self.im_feat_shape = im_feats.shape
         #print(train_attr.values().shape)
         self.attr_feat_shape = np.array(list(train_attr.values())).shape
+        self.attr_test_feat_shape = np.array(list(test_attr.values())).shape
         self.img_inds = list(range(len(im_feats))) # we will shuffle this every epoch for training
         self.im_feats = im_feats
         self.attr_feats = train_attr
+        self.attr_test_feats = test_attr
         self.im_id = im_id
         #print(self.attr_feats)
         #print(self.attr_feat_shape)
@@ -106,17 +108,47 @@ class DatasetLoader:
         im_feats_b = np.concatenate(im_feats_b, axis=0)
         return (im_feats_b, attr_feat_b)
 
+    def test_sample_index(self,index):
+        im_id = self.im_id[index][0]
+        start_ind = index
+        end_ind = index
+        while (self.im_id[start_ind][0] == im_id and start_ind >= 0):
+            start_ind = start_ind - 1
+        start_ind = start_ind + 1
+        while (self.im_id[end_ind][0] == im_id and end_ind < 19731):
+            end_ind = end_ind + 1
+        end_ind = end_ind - 1
+        if end_ind-start_ind>=5:
+            return start_ind, end_ind
+        else:
+            return -1,-1
+
+    def test_sample_items(self,sample_inds,sample_size):
+        attr_feat_b=[]
+        im_feats_b=[]
+        for ind in sample_inds:
+            start_ind,end_ind=self.test_sample_index(ind)
+            if start_ind!=-1:
+                attr_feat_b.append(self.attr_test_feats[self.im_id[ind][0]])
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind) if i != ind],
+                    sample_size - 1, replace=False)
+                # print("sample",sample_index)
+                sample_index = sorted(np.append(sample_index, ind))
+                im_feats_b.append(self.im_feats[sample_index])
+        im_feats_b = np.concatenate(im_feats_b, axis=0)
+        return (im_feats_b, attr_feat_b)
+
+
     def get_batch(self, batch_index, batch_size, sample_size):
         start_ind = batch_index * batch_size
         end_ind = start_ind + batch_size
-        #if self.split == 'train':
-        sample_inds = self.img_inds[start_ind : end_ind]
-        #else:
-            # Since sent_inds are not shuffled, every self.sent_im_ratio sents
-            # belong to one image. Sample each pair only once.
-            #sample_inds = self.img_inds[start_ind * self.sent_im_ratio : \
-            #                end_ind * self.sent_im_ratio : self.sent_im_ratio]
-        (im_feats, attr_feats) = self.sample_items(sample_inds, sample_size)
+        if self.split == 'train':
+            sample_inds = self.img_inds[start_ind : end_ind]
+            (im_feats, attr_feats) = self.sample_items(sample_inds, sample_size)
+        else:
+            sample_inds = self.img_inds[start_ind : 19732]
+            (im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
         # Each row of the labels is the label for one sentence,
         # with corresponding image index sent to True.
         labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
