@@ -16,8 +16,8 @@ def main(_):
     # Load data.
     data_loader = DatasetLoader(FLAGS.image_feat_path, FLAGS.sent_feat_path)
     num_ims, im_feat_dim = data_loader.im_feat_shape
-    num_sents, sent_feat_dim = data_loader.sent_feat_shape
-    steps_per_epoch = num_sents // FLAGS.batch_size
+    num_sents, sent_feat_dim = data_loader.attr_feat_shape
+    steps_per_epoch = num_ims // FLAGS.batch_size
     num_steps = steps_per_epoch * FLAGS.max_num_epoch
 
     # Setup placeholders for input variables.

@@ -1,5 +1,5 @@
 import os
-from .reiddataset_downloader import *
+#from .reiddataset_downloader import *
 def import_Market1501(dataset_dir):
     market1501_dir = os.path.join(dataset_dir,'Market-1501')
     if not os.path.exists(market1501_dir):
