@@ -16,20 +16,20 @@ def main(_):
     # Load data.
     data_loader = DatasetLoader(FLAGS.image_feat_path, FLAGS.sent_feat_path)
     num_ims, im_feat_dim = data_loader.im_feat_shape
-    num_sents, sent_feat_dim = data_loader.attr_feat_shape
+    num_attr, attr_feat_dim = data_loader.attr_feat_shape
     steps_per_epoch = num_ims // FLAGS.batch_size
     num_steps = steps_per_epoch * FLAGS.max_num_epoch
     print("image_shape",data_loader.im_feat_shape)
     print("attr_shape",data_loader.attr_feat_shape)
 
     # Setup placeholders for input variables.
-    im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, im_feat_dim])
-    sent_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, sent_feat_dim])
+    im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
     label_plh = tf.placeholder(tf.bool, shape=[FLAGS.batch_size * FLAGS.sample_size, FLAGS.batch_size])
     train_phase_plh = tf.placeholder(tf.bool)
 
     # Setup training operation.
-    loss = setup_train_model(im_feat_plh, sent_feat_plh, train_phase_plh, label_plh, FLAGS)
+    loss = setup_train_model(im_feat_plh, attr_feat_plh, train_phase_plh, label_plh, FLAGS)
 
     # Setup optimizer.
     global_step = tf.Variable(0, trainable=False)
@@ -55,11 +55,11 @@ def main(_):
             if i % steps_per_epoch == 0:
                 # shuffle the indices.
                 data_loader.shuffle_inds()
-            im_feats, sent_feats, labels = data_loader.get_batch(
+            im_feats, attr_feats, labels = data_loader.get_batch(
                     i % steps_per_epoch, FLAGS.batch_size, FLAGS.sample_size)
             feed_dict = {
                     im_feat_plh : im_feats,
-                    sent_feat_plh : sent_feats,
+                    attr_feat_plh : attr_feats,
                     label_plh : labels,
                     train_phase_plh : True,
             }

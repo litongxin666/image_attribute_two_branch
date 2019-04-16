@@ -88,7 +88,7 @@ class DatasetLoader:
             sample_index = sorted(np.append(sample_index, ind))
             im_feats_b.append(self.im_feats[sample_index])
         im_feats_b = np.concatenate(im_feats_b, axis=0)
-        return im_feats_b, attr_feat_b
+        return (im_feats_b, attr_feat_b)
 
     def get_batch(self, batch_index, batch_size, sample_size):
         start_ind = batch_index * batch_size
