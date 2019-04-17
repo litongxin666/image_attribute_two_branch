@@ -44,7 +44,8 @@ class DatasetLoader:
         self.attr_test_feats = test_attr
         self.im_id = im_id
         #print(self.attr_feats)
-        #print(self.attr_feat_shape)
+        #print("test_attr_feat_shape",self.attr_test_feat_shape)
+        #print("test_img_shape",self.im_feat_shape)
         #self.sent_feats = sent_feats
         # Assume the number of sentence per image is a constant.
         #self.sent_im_ratio = len(sent_feats) // len(im_feats)
@@ -115,7 +116,7 @@ class DatasetLoader:
         while (self.im_id[start_ind][0] == im_id and start_ind >= 0):
             start_ind = start_ind - 1
         start_ind = start_ind + 1
-        while (self.im_id[end_ind][0] == im_id and end_ind < 19731):
+        while (self.im_id[end_ind][0] == im_id and end_ind < 13114):
             end_ind = end_ind + 1
         end_ind = end_ind - 1
         if end_ind-start_ind>=5:
