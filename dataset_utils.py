@@ -126,7 +126,7 @@ class DatasetLoader:
     def test_sample_items(self,sample_inds,sample_size):
         attr_feat_b=[]
         im_feats_b=[]
-        for ind in sample_inds:
+        while ind<19731:
             start_ind,end_ind=self.test_sample_index(ind)
             if start_ind!=-1:
                 attr_feat_b.append(self.attr_test_feats[self.im_id[ind][0]])
@@ -136,6 +136,7 @@ class DatasetLoader:
                 # print("sample",sample_index)
                 sample_index = sorted(np.append(sample_index, ind))
                 im_feats_b.append(self.im_feats[sample_index])
+            ind = end_ind+1
         im_feats_b = np.concatenate(im_feats_b, axis=0)
         return (im_feats_b, attr_feat_b)
 
