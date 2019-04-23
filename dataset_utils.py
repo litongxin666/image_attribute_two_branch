@@ -119,7 +119,7 @@ class DatasetLoader:
         if end_ind-start_ind>=5:
             return start_ind, end_ind
         else:
-            return -1,-1
+            return -1,end_ind
 
     def test_sample_items(self,sample_inds,sample_size):
         attr_feat_b=[]
@@ -127,6 +127,7 @@ class DatasetLoader:
         ind=0
         while ind<13114:
             start_ind,end_ind=self.test_sample_index(ind)
+            #print(start_ind,end_ind)
             if start_ind!=-1:
                 attr_feat_b.append(self.attr_test_feats[self.im_id[ind][0]])
                 sample_index = np.random.choice(
@@ -134,8 +135,8 @@ class DatasetLoader:
                     sample_size - 1, replace=False)
                 # print("sample",sample_index)
                 sample_index = sorted(np.append(sample_index, ind))
-                print(sample_index)
-                print("*"*10)
+                #print(sample_index)
+                #print("*"*10)
                 im_feats_b.append(self.im_feats[sample_index])
             ind = end_ind+1
         im_feats_b = np.concatenate(im_feats_b, axis=0)
@@ -148,10 +149,12 @@ class DatasetLoader:
         if self.split == 'train':
             sample_inds = self.img_inds[start_ind : end_ind]
             (im_feats, attr_feats) = self.sample_items(sample_inds, sample_size)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
         else:
-            sample_inds = self.img_inds[start_ind : 19732]
+            sample_inds = self.img_inds[start_ind : 13115]
             (im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+            labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
         # Each row of the labels is the label for one sentence,
         # with corresponding image index sent to True.
-        labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
         return(im_feats, attr_feats, labels)
