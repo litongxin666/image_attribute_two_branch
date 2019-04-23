@@ -63,8 +63,11 @@ def embedding_loss(im_embeds, sent_embeds, im_labels, args):
     neg_pair_dist = tf.reshape(tf.boolean_mask(sent_sent_dist, ~sent_sent_mask), [num_img, -1])
     sent_only_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
     sent_only_loss = tf.reduce_mean(tf.nn.top_k(sent_only_loss, k=args.num_neg_sample)[0])
-
+    
+    #loss = tf.reduce_mean(pos_pair_dist)
     loss = im_loss * args.im_loss_factor + sent_loss + sent_only_loss * args.sent_only_loss_factor
+    #loss = sent_loss + sent_only_loss * args.sent_only_loss_factor
+    #loss = im_loss + sent_only_loss * args.sent_only_loss_factor
     return loss
 
 
@@ -77,28 +80,31 @@ def recall_k(im_embeds, sent_embeds, im_labels, ks=None):
         # Use negative distance to find the index of
         # the smallest k elements in each row.
         pred = tf.nn.top_k(-dist, k=k)[1]
+        print("pred",pred.shape)
         # Create a boolean mask for each column (k value) in pred,
         # s.t. mask[i][j] is 1 iff pred[i][k] = j.
         pred_k_mask = lambda topk_idx: tf.one_hot(topk_idx, labels.shape[1],
                             on_value=True, off_value=False, dtype=tf.bool)
+        #print("pred_mask",pred_k_mask)
         # Create a boolean mask for the predicted indicies
         # by taking logical or of boolean masks for each column,
         # s.t. mask[i][j] is 1 iff j is in pred[i].
         pred_mask = tf.reduce_any(tf.map_fn(
                 pred_k_mask, tf.transpose(pred), dtype=tf.bool), axis=0)
+        print("pred_mask",pred_mask.shape)
         # Entry (i, j) is matched iff pred_mask[i][j] and labels[i][j] are 1.
         matched = tf.cast(tf.logical_and(pred_mask, labels), dtype=tf.float32)
         return tf.reduce_mean(tf.reduce_max(matched, axis=1))
     return tf.concat(
         [tf.map_fn(lambda k: retrieval_recall(tf.transpose(sent_im_dist), tf.transpose(im_labels), k),
-                   ks, dtype=tf.float32),
-         tf.map_fn(lambda k: retrieval_recall(sent_im_dist, im_labels, k),
                    ks, dtype=tf.float32)],
+         #tf.map_fn(lambda k: retrieval_recall(sent_im_dist, im_labels, k),
+         #          ks, dtype=tf.float32)],
         axis=0)
 
 
 def embedding_model(im_feats, sent_feats, train_phase, im_labels,
-                    fc_dim = 2048, embed_dim = 512):
+                    fc_dim = 1024, embed_dim = 512):
     """
         Build two-branch embedding networks.
         fc_dim: the output dimension of the first fc layer.
@@ -111,7 +117,7 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
                              scope = 'im_embed_2')
     i_embed = tf.nn.l2_normalize(im_fc2, 1, epsilon=1e-10)
     # Text branch.
-    sent_fc1 = add_fc(sent_feats, fc_dim, train_phase,'sent_embed_1')
+    sent_fc1 = add_fc(sent_feats, 256, train_phase,'sent_embed_1')
     sent_fc2 = fully_connected(sent_fc1, embed_dim, activation_fn=None,
                                scope = 'sent_embed_2')
     s_embed = tf.nn.l2_normalize(sent_fc2, 1, epsilon=1e-10)

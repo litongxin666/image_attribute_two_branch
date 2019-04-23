@@ -28,6 +28,8 @@ def eval_once(data_loader, saver, placeholders, recall):
 
         # For testing and validation, there should be only one batch with index 0.
         im_feats, attr_feats, labels = data_loader.get_batch(0, FLAGS.batch_size, FLAGS.sample_size)
+        print("im_shape",im_feats.shape)
+        print("attr_shape",len(attr_feats))
         feed_dict = {
                 placeholders['im_feat'] : im_feats,
                 placeholders['attr_feat'] : attr_feats,
@@ -35,8 +37,8 @@ def eval_once(data_loader, saver, placeholders, recall):
                 placeholders['train_phase'] : False,
         }
         [recall_vals] = sess.run([recall], feed_dict = feed_dict)
-        print('im2sent:', ' '.join(map(str, recall_vals[:3])),
-              'sent2im:', ' '.join(map(str, recall_vals[3:])))
+        print('im2sent:', ' '.join(map(str, recall_vals[:3])))
+             # 'sent2im:', ' '.join(map(str, recall_vals[3:])))
 
 
 def main(_):
@@ -45,11 +47,12 @@ def main(_):
     num_ims, im_feat_dim = data_loader.im_feat_shape
     #num_sents, sent_feat_dim = data_loader.sent_feat_shape
     num_attr, attr_feat_dim = data_loader.attr_test_feat_shape
-
+    #print("im_feat_dim",im_feat_dim)
+    #print("attr_feat_dim",attr_feat_dim)
     # Setup placeholders for input variables.
-    im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
-    attr_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
-    label_plh = tf.placeholder(tf.bool, shape=[FLAGS.batch_size * FLAGS.sample_size, FLAGS.batch_size])
+    im_feat_plh = tf.placeholder(tf.float32, shape=[3535, im_feat_dim])
+    attr_feat_plh = tf.placeholder(tf.float32, shape=[707, attr_feat_dim])
+    label_plh = tf.placeholder(tf.bool, shape=[3535,707])
     train_phase_plh = tf.placeholder(tf.bool)
     placeholders = {
         'im_feat' : im_feat_plh,
