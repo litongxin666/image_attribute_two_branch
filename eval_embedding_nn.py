@@ -50,8 +50,8 @@ def main(_):
     #print("im_feat_dim",im_feat_dim)
     #print("attr_feat_dim",attr_feat_dim)
     # Setup placeholders for input variables.
-    im_feat_plh = tf.placeholder(tf.float32, shape=[3535, im_feat_dim])
-    attr_feat_plh = tf.placeholder(tf.float32, shape=[707, attr_feat_dim])
+    im_feat_plh = tf.placeholder(tf.float32, shape=[num_ims, im_feat_dim])
+    attr_feat_plh = tf.placeholder(tf.float32, shape=[num_attr, attr_feat_dim])
     label_plh = tf.placeholder(tf.bool, shape=[3535,707])
     train_phase_plh = tf.placeholder(tf.bool)
     placeholders = {

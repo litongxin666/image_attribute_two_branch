@@ -152,7 +152,9 @@ class DatasetLoader:
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
         else:
             sample_inds = self.img_inds[start_ind : 13115]
-            (im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+            im_feats = self.im_feats
+            attr_feats = sorted(self.attr_feats.items(), key=lambda d: d[0])
             labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
         # Each row of the labels is the label for one sentence,
         # with corresponding image index sent to True.

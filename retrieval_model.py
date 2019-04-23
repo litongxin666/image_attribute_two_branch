@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.contrib.layers.python.layers import fully_connected
+from dataset_utils import DatasetLoader
 
 def add_fc(inputs, outdim, train_phase, scope_in):
     fc =  fully_connected(inputs, outdim, activation_fn=None, scope=scope_in + '/fc')
@@ -75,33 +76,17 @@ def recall_k(im_embeds, sent_embeds, im_labels, ks=None):
     """
         Compute recall at given ks.
     """
+    count=0
     sent_im_dist = pdist(im_embeds, sent_embeds)
-    def retrieval_recall(dist, labels, k):
-        # Use negative distance to find the index of
-        # the smallest k elements in each row.
-        pred = tf.nn.top_k(-dist, k=k)[1]
-        print("pred",pred.shape)
-        # Create a boolean mask for each column (k value) in pred,
-        # s.t. mask[i][j] is 1 iff pred[i][k] = j.
-        pred_k_mask = lambda topk_idx: tf.one_hot(topk_idx, labels.shape[1],
-                            on_value=True, off_value=False, dtype=tf.bool)
-        #print("pred_mask",pred_k_mask)
-        # Create a boolean mask for the predicted indicies
-        # by taking logical or of boolean masks for each column,
-        # s.t. mask[i][j] is 1 iff j is in pred[i].
-        pred_mask = tf.reduce_any(tf.map_fn(
-                pred_k_mask, tf.transpose(pred), dtype=tf.bool), axis=0)
-        print("pred_mask",pred_mask.shape)
-        # Entry (i, j) is matched iff pred_mask[i][j] and labels[i][j] are 1.
-        matched = tf.cast(tf.logical_and(pred_mask, labels), dtype=tf.float32)
-        return tf.reduce_mean(tf.reduce_max(matched, axis=1))
-    return tf.concat(
-        [tf.map_fn(lambda k: retrieval_recall(tf.transpose(sent_im_dist), tf.transpose(im_labels), k),
-                   ks, dtype=tf.float32)],
-         #tf.map_fn(lambda k: retrieval_recall(sent_im_dist, im_labels, k),
-         #          ks, dtype=tf.float32)],
-        axis=0)
-
+    data_loader = DatasetLoader('/home/litongxin/image_attribute_two_branch/img_feat_test.mat',
+                  '/home/litongxin/Two_branch_network/two_branch_img_feature.mat', split='eval')
+    pred = tf.nn.top_k(-tf.transpose(sent_im_dist), k=1)[1]
+    for i in range(pred.shape[0]):
+        im_id = data_loader.im_id[pred[i][0]][0]
+        if im_id == data_loader.attr_test_feats.keys()[i] or \
+                data_loader.attr_test_feats[im_id] == data_loader.attr_test_feats.values()[i]:
+            count = count + 1.0
+    return count/data_loader.attr_test_feat_shape[0]
 
 def embedding_model(im_feats, sent_feats, train_phase, im_labels,
                     fc_dim = 1024, embed_dim = 512):
