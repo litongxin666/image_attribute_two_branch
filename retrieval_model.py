@@ -84,7 +84,7 @@ def recall_k(im_embeds, sent_embeds, im_labels, ks=None):
     for i in range(pred.shape[0]):
         im_id = data_loader.im_id[pred[i][0]][0]
         if im_id == data_loader.attr_test_feats.keys()[i] or \
-                data_loader.attr_test_feats[im_id] == data_loader.attr_test_feats.values()[i]:
+                data_loader.attr_test_feats[im_id] == data_loader.attr_test_feats.values()[]:
             count = count + 1.0
     return count/data_loader.attr_test_feat_shape[0]
 

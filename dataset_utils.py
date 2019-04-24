@@ -32,7 +32,15 @@ class DatasetLoader:
 
         #train ,query, gallery = import_MarketDuke_nodistractors('/home/litongxin/Market-1501')
         train_attr, test_attr, self.label = import_Market1501Attribute_binary('/home/litongxin')
-
+        attr_value = []
+        attr_id = []
+        for i in train_attr.keys():
+            if train_attr[i] not in attr_value:
+                attr_value.append(train_attr[i])
+                attr_id.append(i)
+        for j in train_attr.keys():
+            if j not in attr_id:
+                train_attr.pop(j)
         self.split = split
         self.im_feat_shape = im_feats.shape
         #print(train_attr.values().shape)
@@ -66,7 +74,7 @@ class DatasetLoader:
         while(self.im_id[start_ind][0]==im_id and start_ind>=0):
             start_ind=start_ind-1
         start_ind=start_ind+1
-        while (self.im_id[end_ind][0] == im_id and end_ind<12935):
+        while (self.im_id[end_ind][0] == im_id and end_ind<8932):
             end_ind = end_ind + 1
         end_ind = end_ind - 1
         return start_ind, end_ind
