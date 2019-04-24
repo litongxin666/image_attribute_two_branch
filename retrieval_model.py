@@ -81,12 +81,13 @@ def recall_k(im_embeds, sent_embeds, im_labels, ks=None):
     data_loader = DatasetLoader('/home/litongxin/image_attribute_two_branch/img_feat_test.mat',
                   '/home/litongxin/Two_branch_network/two_branch_img_feature.mat', split='eval')
     pred = tf.nn.top_k(-tf.transpose(sent_im_dist), k=1)[1]
-    for i in range(pred.shape[0]):
-        im_id = data_loader.im_id[pred[i][0]][0]
-        if im_id == data_loader.attr_test_feats.keys()[i] or \
-                data_loader.attr_test_feats[im_id] == data_loader.attr_test_feats.values()[i]:
-            count = count + 1.0
-    return count/data_loader.attr_test_feat_shape[0]
+    #for i in range(pred.shape[0]):
+    #    im_id = data_loader.im_id[int(pred[i][0])][0]
+    #    if im_id == data_loader.attr_test_feats.keys()[i] or \
+    #            data_loader.attr_test_feats[im_id] == data_loader.attr_test_feats.values()[i]:
+    #        count = count + 1.0
+    #return count/data_loader.attr_test_feat_shape[0]
+    return pred
 
 def embedding_model(im_feats, sent_feats, train_phase, im_labels,
                     fc_dim = 1024, embed_dim = 512):
@@ -97,6 +98,7 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
                    embedding space dimension.
     """
     # Image branch.
+    #is_training = tf.placeholder(dtype=tf.bool, shape=())
     im_fc1 = add_fc(im_feats, fc_dim, train_phase, 'im_embed_1')
     im_fc2 = fully_connected(im_fc1, embed_dim, activation_fn=None,
                              scope = 'im_embed_2')
@@ -118,7 +120,7 @@ def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
     return loss
 
-
+   
 def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):
     # im_feats b x image_feature_dim
     # sent_feats 5b x sent_feature_dim
