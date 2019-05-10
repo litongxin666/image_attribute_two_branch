@@ -97,7 +97,9 @@ class DatasetLoader:
         for i in sample_inds:
             #print("attr_index",self.im_id)
             #print("attr",self.attr_feats[strt])
-            attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
+            start_ind, end_ind = self.sample_index(i)
+            if end_ind - start_ind >= sample_size:
+                attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
             #attr_feat_b.append(self.attr_feats[self.im_feats['img_id'][i]])
         #im_feats_b = self.im_feats[[i // self.sent_im_ratio for i in sample_inds],:]
         im_feats_b = []
@@ -109,17 +111,16 @@ class DatasetLoader:
             #print("end",end_ind)
             #start_ind = ind - ind % self.sent_im_ratio
             #end_ind = start_ind + self.sent_im_ratio
-            if end_ind-start_ind==1:
-                sample_index=np.append(start_ind,end_ind)
-            else:
+                #sample_index=np.append(start_ind,end_ind)
+                #pass
+            if end_ind - start_ind >= sample_size:
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind) if i != ind],
                     sample_size - 1, replace=False)
                 #print("sample",sample_index)
                 sample_index = sorted(np.append(sample_index, ind))
-
+                im_feats_b.append(self.im_feats[sample_index])
             #print("sample",sample_index)
-            im_feats_b.append(self.im_feats[sample_index])
             #print("im_feat",im_feats_b)
         im_feats_b = np.concatenate(im_feats_b, axis=0)
         return (im_feats_b, attr_feat_b)

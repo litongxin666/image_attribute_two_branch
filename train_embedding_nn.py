@@ -161,7 +161,7 @@ if __name__ == '__main__':
     parser.add_argument('--restore_path', type=str, help='Path to the restoring checkpoint MetaGraph file.')
     # Training parameters.
     parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training.')
-    parser.add_argument('--sample_size', type=int, default=2, help='Number of positive pair to sample.')
+    parser.add_argument('--sample_size', type=int, default=4, help='Number of positive pair to sample.')
     parser.add_argument('--max_num_epoch', type=int, default=30, help='Max number of epochs to train.')
     parser.add_argument('--num_neg_sample', type=int, default=10, help='Number of negative example to sample.')
     parser.add_argument('--margin', type=float, default=0.01, help='Margin.')

@@ -52,19 +52,30 @@ def embedding_loss(im_embeds, sent_embeds, im_labels, args):
     im_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
     im_loss = tf.reduce_mean(tf.nn.top_k(im_loss, k=args.num_neg_sample)[0])
     # image loss: attribute, positive image, and negative image
+    #neg_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), ~tf.transpose(im_labels)), [num_attr, -1])
+    #neg_pair_dist = tf.reshape(tf.tile(neg_pair_dist, [1, img_attr_ratio]), [num_img, -1])
+    #sent_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
+    #sent_loss = tf.reduce_mean(tf.nn.top_k(sent_loss, k=args.num_neg_sample)[0])
+
+
+    pos_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), tf.transpose(im_labels)), [num_attr, -1])
+    pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=False)
     neg_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), ~tf.transpose(im_labels)), [num_attr, -1])
-    neg_pair_dist = tf.reshape(tf.tile(neg_pair_dist, [1, img_attr_ratio]), [num_img, -1])
+    neg_pair_dist = tf.reduce_max(neg_pair_dist,axis=1,keep_dims=False)
     sent_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
-    sent_loss = tf.reduce_mean(tf.nn.top_k(sent_loss, k=args.num_neg_sample)[0])
+    sent_loss=tf.reduce_mean(tf.reduce_sum(sent_loss))
+
     # image only loss (neighborhood-preserving constraints)
     sent_sent_dist = pdist(im_embeds, im_embeds)
     sent_sent_mask = tf.reshape(tf.tile(tf.transpose(im_labels), [1, img_attr_ratio]), [num_img, num_img])
     pos_pair_dist = tf.reshape(tf.boolean_mask(sent_sent_dist, sent_sent_mask), [-1, img_attr_ratio])
-    pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=True)
+    pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=False)
     neg_pair_dist = tf.reshape(tf.boolean_mask(sent_sent_dist, ~sent_sent_mask), [num_img, -1])
+    neg_pair_dist = tf.reduce_min(neg_pair_dist, axis=1,keep_dims=False)
     sent_only_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
-    sent_only_loss = tf.reduce_mean(tf.nn.top_k(sent_only_loss, k=args.num_neg_sample)[0])
-    
+    #sent_only_loss = tf.reduce_mean(tf.nn.top_k(sent_only_loss, k=args.num_neg_sample)[0])
+    sent_only_loss = tf.reduce_mean(tf.reduce_sum(sent_only_loss))
+
     #loss = tf.reduce_mean(pos_pair_dist)
     loss = im_loss * args.im_loss_factor + sent_loss + sent_only_loss * args.sent_only_loss_factor
     #loss = sent_loss + sent_only_loss * args.sent_only_loss_factor
