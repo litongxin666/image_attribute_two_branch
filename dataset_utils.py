@@ -26,7 +26,7 @@ class DatasetLoader:
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
         attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
-        print("shape",len(attr_id['attr_id']))
+        #print("shape",len(attr_id['attr_id']))
         #print("attr_id",sorted(attr_id['attr_id']))
         #data_sent = h5py.File(sent_feat_path)
         # WARNING: Tanspose is applied if and only if the feature is stored as
