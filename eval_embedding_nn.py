@@ -36,9 +36,20 @@ def eval_once(data_loader, saver, placeholders, recall):
                 placeholders['label'] : labels,
                 placeholders['train_phase'] : False,
         }
-        [recall_vals] = sess.run([recall], feed_dict = feed_dict)
-        print('im2sent:', ' '.join(map(str, recall_vals[:3])))
-             # 'sent2im:', ' '.join(map(str, recall_vals[3:])))
+        #[recall_vals] = sess.run([recall], feed_dict = feed_dict)
+        #print('im2sent:', ' '.join(map(str, recall_vals[:3])))
+        #     # 'sent2im:', ' '.join(map(str, recall_vals[3:])))
+        pred=sess.run(recall, feed_dict = feed_dict)
+        count=0.0
+        attr_test_list= sorted(data_loader.attr_test_feats.items(), key=lambda d:d[0]) 
+        for i in range(pred.shape[0]):
+            im_id = data_loader.im_id[int(pred[i][0])][0]
+            if im_id == attr_test_list[i][0] or \
+                data_loader.attr_test_feats[im_id] == attr_test_list[i][1]:
+                count = count + 1.0
+        #return count/data_loader.attr_test_feat_shape[0]
+
+        print(count)
 
 
 def main(_):
@@ -47,8 +58,8 @@ def main(_):
     num_ims, im_feat_dim = data_loader.im_feat_shape
     #num_sents, sent_feat_dim = data_loader.sent_feat_shape
     num_attr, attr_feat_dim = data_loader.attr_test_feat_shape
-    #print("im_feat_dim",im_feat_dim)
-    #print("attr_feat_dim",attr_feat_dim)
+    print("im_dim",num_ims)
+    print("attr_dim",num_attr)
     # Setup placeholders for input variables.
     im_feat_plh = tf.placeholder(tf.float32, shape=[num_ims, im_feat_dim])
     attr_feat_plh = tf.placeholder(tf.float32, shape=[num_attr, attr_feat_dim])

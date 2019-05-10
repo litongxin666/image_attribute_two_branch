@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import h5py
 import numpy as np
+import scipy.io
 from scipy.io import loadmat
 
 import os
@@ -24,6 +25,9 @@ class DatasetLoader:
         im_id = data_im['img_id']
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
+        attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
+        print("shape",len(attr_id['attr_id']))
+        #print("attr_id",sorted(attr_id['attr_id']))
         #data_sent = h5py.File(sent_feat_path)
         # WARNING: Tanspose is applied if and only if the feature is stored as
         # a column in the original matrix.
@@ -32,19 +36,22 @@ class DatasetLoader:
 
         #train ,query, gallery = import_MarketDuke_nodistractors('/home/litongxin/Market-1501')
         train_attr, test_attr, self.label = import_Market1501Attribute_binary('/home/litongxin')
-        attr_value = []
-        attr_id = []
-        for i in train_attr.keys():
-            if train_attr[i] not in attr_value:
-                attr_value.append(train_attr[i])
-                attr_id.append(i)
+        attr_id_not=[]
         for j in train_attr.keys():
-            if j not in attr_id:
-                train_attr.pop(j)
+            if j not in attr_id['attr_id']:
+                attr_id_not.append(j)
+        #print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr.pop(m)
+        #result={'attr_id':attr_id}
+        #scipy.io.savemat('attr_id.mat', result)
+        #attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
+        #print("attr_id",attr_id['attr_id'])
         self.split = split
         self.im_feat_shape = im_feats.shape
         #print(train_attr.values().shape)
         self.attr_feat_shape = np.array(list(train_attr.values())).shape
+        #print("attr_shape",self.attr_feat_shape)
         self.attr_test_feat_shape = np.array(list(test_attr.values())).shape
         self.img_inds = list(range(len(im_feats))) # we will shuffle this every epoch for training
         self.im_feats = im_feats
@@ -74,7 +81,7 @@ class DatasetLoader:
         while(self.im_id[start_ind][0]==im_id and start_ind>=0):
             start_ind=start_ind-1
         start_ind=start_ind+1
-        while (self.im_id[end_ind][0] == im_id and end_ind<8932):
+        while (self.im_id[end_ind][0] == im_id and end_ind<8835):
             end_ind = end_ind + 1
         end_ind = end_ind - 1
         return start_ind, end_ind
@@ -162,7 +169,10 @@ class DatasetLoader:
             sample_inds = self.img_inds[start_ind : 13115]
             #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
             im_feats = self.im_feats
-            attr_feats = sorted(self.attr_feats.items(), key=lambda d: d[0])
+            attr_feats=[]
+            attr_feats_temp = sorted(self.attr_test_feats)
+            for i in attr_feats_temp:
+                attr_feats.append(self.attr_test_feats[i])
             labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
         # Each row of the labels is the label for one sentence,
         # with corresponding image index sent to True.
