@@ -35,7 +35,7 @@ def eval_once(data_loader, saver, placeholders,sess):
     # Setup placeholders for input variables.
     im_feat_plh_t = tf.placeholder(tf.float32, shape=[num_ims_t, im_feat_dim_t])
     attr_feat_plh_t = tf.placeholder(tf.float32, shape=[num_attr_t, attr_feat_dim_t])
-    label_plh_t = tf.placeholder(tf.bool, shape=[3535,707])
+    label_plh_t = tf.placeholder(tf.bool, shape=[1414,707])
     train_phase_plh_t = tf.placeholder(tf.bool)
     placeholders = {
         'im_feat_t' : im_feat_plh_t,
@@ -53,12 +53,13 @@ def eval_once(data_loader, saver, placeholders,sess):
             placeholders['label_t'] : labels,
             placeholders['train_phase_t'] : False,
     }
-    recall = setup_eval_model(im_feat_plh_t, attr_feat_plh_t, train_phase_plh_t, label_plh_t)
+    with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        recall = setup_eval_model(im_feat_plh_t, attr_feat_plh_t, train_phase_plh_t, label_plh_t)
         #[recall_vals] = sess.run([recall], feed_dict = feed_dict)
         #print('im2sent:', ' '.join(map(str, recall_vals[:3])))
         #     # 'sent2im:', ' '.join(map(str, recall_vals[3:])))
-    #pred=sess.run(recall, feed_dict = feed_dict)
-    pred=recall(feed_dict=feed_dict)
+    pred=sess.run(recall, feed_dict = feed_dict)
+    #pred=recall(feed_dict=feed_dict)
     count=0.0
     attr_test_list= sorted(data_loader.attr_test_feats.items(), key=lambda d:d[0])
     for i in range(pred.shape[0]):
@@ -108,7 +109,7 @@ def main(_):
         # Setup placeholders for input variables.
     im_feat_plh_t = tf.placeholder(tf.float32, shape=[num_ims_t, im_feat_dim_t])
     attr_feat_plh_t = tf.placeholder(tf.float32, shape=[num_attr_t, attr_feat_dim_t])
-    label_plh_t = tf.placeholder(tf.bool, shape=[3535,707])
+    label_plh_t = tf.placeholder(tf.bool, shape=[1414,707])
     train_phase_plh_t = tf.placeholder(tf.bool)
     placeholders = {
         'im_feat_t' : im_feat_plh_t,
@@ -116,6 +117,7 @@ def main(_):
         'label_t' : label_plh_t,
         'train_phase_t' : train_phase_plh_t,
     }
+
 
     # Setup model saver.
     saver = tf.train.Saver(save_relative_paths=True)
@@ -144,8 +146,8 @@ def main(_):
             if i % steps_per_epoch == 0 and i > 0:
                 print('Saving checkpoint at step %d' % i)
                 saver.save(sess, FLAGS.save_dir, global_step = global_step)
-                eval_once(data_loader_test, saver, placeholders,sess)
-
+                if (i // steps_per_epoch)%5==0:
+                    eval_once(data_loader_test, saver, placeholders,sess)
 
 if __name__ == '__main__':
     np.random.seed(0)
@@ -158,14 +160,14 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', type=str, help='Directory for saving checkpoints.')
     parser.add_argument('--restore_path', type=str, help='Path to the restoring checkpoint MetaGraph file.')
     # Training parameters.
-    parser.add_argument('--batch_size', type=int, default=11, help='Batch size for training.')
+    parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training.')
     parser.add_argument('--sample_size', type=int, default=2, help='Number of positive pair to sample.')
-    parser.add_argument('--max_num_epoch', type=int, default=40, help='Max number of epochs to train.')
+    parser.add_argument('--max_num_epoch', type=int, default=30, help='Max number of epochs to train.')
     parser.add_argument('--num_neg_sample', type=int, default=10, help='Number of negative example to sample.')
-    parser.add_argument('--margin', type=float, default=0.05, help='Margin.')
-    parser.add_argument('--im_loss_factor', type=float, default=1.5,
+    parser.add_argument('--margin', type=float, default=0.01, help='Margin.')
+    parser.add_argument('--im_loss_factor', type=float, default=1.0,
                         help='Factor multiplied with image loss. Set to 0 for single direction.')
-    parser.add_argument('--sent_only_loss_factor', type=float, default=0.05,
+    parser.add_argument('--sent_only_loss_factor', type=float, default=0.5,
                         help='Factor multiplied with sent only loss. Set to 0 for no neighbor constraint.')
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

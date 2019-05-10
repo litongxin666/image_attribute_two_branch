@@ -1,9 +1,9 @@
 if [ "$1" = "--train" ]; then
-    CUDA_VISIBLE_DEVICES=0 \
+    CUDA_VISIBLE_DEVICES=5 \
     python3.5 train_embedding_nn.py \
-    --image_feat_path /home/litongxin/image_attribute_two_branch/img_feat.mat \
+    --image_feat_path /home/litongxin/image_attribute_two_branch/img_feat_new.mat \
     --sent_feat_path /home/litongxin/Two_branch_network/two_branch_img_feature.mat \
-    --save_dir /home/litongxin/image_attribute_two_branch
+    --save_dir /home/litongxin/image_attribute_two_branch/checkpoint/normal/
 fi
 
 if [ "$1" = "--test" ]; then
@@ -11,7 +11,7 @@ if [ "$1" = "--test" ]; then
     python3.5 eval_embedding_nn.py \
     --image_feat_path /home/litongxin/image_attribute_two_branch/img_feat_test.mat \
     --sent_feat_path /home/litongxin/Two_branch_network/two_branch_img_feature.mat \
-    --restore_path /home/litongxin/image_attribute_two_branch-876.meta
+    --restore_path /home/litongxin/image_attribute_two_branch/checkpoint/normal/-12046.meta
 fi
 
 if [ "$1" = "--val" ]; then
