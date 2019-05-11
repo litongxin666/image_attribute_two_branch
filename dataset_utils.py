@@ -97,9 +97,8 @@ class DatasetLoader:
         for i in sample_inds:
             #print("attr_index",self.im_id)
             #print("attr",self.attr_feats[strt])
-            start_ind, end_ind = self.sample_index(i)
-            if end_ind - start_ind >= sample_size:
-                attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
+            #start_ind, end_ind = self.sample_index(i)
+            attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
             #attr_feat_b.append(self.attr_feats[self.im_feats['img_id'][i]])
         #im_feats_b = self.im_feats[[i // self.sent_im_ratio for i in sample_inds],:]
         im_feats_b = []
