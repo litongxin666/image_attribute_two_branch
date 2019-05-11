@@ -120,12 +120,14 @@ class DatasetLoader:
                 sample_index = sorted(np.append(sample_index, ind))
                 im_feats_b.append(self.im_feats[sample_index])
             else:
+                sample_index=[]
                 count=sample_size-(end_ind-start_ind+1)
                 for i in range(start_ind,end_ind+1):
-                    im_feats_b.append(self.im_feats[i])
+                    sample_index.append(i)
                 if count!=0:
                     for j in range(count):
-                        im_feats_b.append(self.im_feats[ind])
+                        sample_index.append(ind)
+                im_feats_b.append(self.im_feats[sample_index])
             #print("sample",sample_index)
             #print("im_feat",im_feats_b)
         im_feats_b = np.concatenate(im_feats_b, axis=0)
