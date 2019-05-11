@@ -102,6 +102,7 @@ class DatasetLoader:
                 attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
             #attr_feat_b.append(self.attr_feats[self.im_feats['img_id'][i]])
         #im_feats_b = self.im_feats[[i // self.sent_im_ratio for i in sample_inds],:]
+        print("len_attr",len(attr_feat_b))
         im_feats_b = []
         for ind in sample_inds:
             # ind is an index for image
@@ -121,7 +122,7 @@ class DatasetLoader:
                 sample_index = sorted(np.append(sample_index, ind))
                 im_feats_b.append(self.im_feats[sample_index])
             #print("sample",sample_index)
-            #print("im_feat",im_feats_b)
+        print("len_im_feat",len(im_feats_b))
         im_feats_b = np.concatenate(im_feats_b, axis=0)
         return (im_feats_b, attr_feat_b)
 
@@ -162,8 +163,11 @@ class DatasetLoader:
     def get_batch(self, batch_index, batch_size, sample_size):
         start_ind = batch_index * batch_size
         end_ind = start_ind + batch_size
+        print("start",start_ind)
+        print("end",end_ind)
         if self.split == 'train':
             sample_inds = self.img_inds[start_ind : end_ind]
+            print("len",len(sample_inds))
             (im_feats, attr_feats) = self.sample_items(sample_inds, sample_size)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
         else:
