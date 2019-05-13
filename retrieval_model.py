@@ -76,6 +76,10 @@ def embedding_loss(im_embeds, sent_embeds, im_labels, args):
     #sent_only_loss = tf.reduce_mean(tf.nn.top_k(sent_only_loss, k=args.num_neg_sample)[0])
     sent_only_loss = tf.reduce_mean(tf.reduce_sum(sent_only_loss))
 
+
+
+    #attribute loss
+
     #loss = tf.reduce_mean(pos_pair_dist)
     loss = im_loss * args.im_loss_factor + sent_loss + sent_only_loss * args.sent_only_loss_factor
     #loss = sent_loss + sent_only_loss * args.sent_only_loss_factor
@@ -114,12 +118,14 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
     im_fc2 = fully_connected(im_fc1, embed_dim, activation_fn=None,
                              scope = 'im_embed_2')
     i_embed = tf.nn.l2_normalize(im_fc2, 1, epsilon=1e-10)
+    attr = fully_connected(im_fc2,30,activation_fn=None,
+                             scope = 'attr_rec')
     # Text branch.
     sent_fc1 = add_fc(sent_feats, 256, train_phase,'sent_embed_1')
     sent_fc2 = fully_connected(sent_fc1, embed_dim, activation_fn=None,
                                scope = 'sent_embed_2')
     s_embed = tf.nn.l2_normalize(sent_fc2, 1, epsilon=1e-10)
-    return i_embed, s_embed
+    return i_embed, s_embed,attr
 
 
 def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
@@ -127,9 +133,10 @@ def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
     # sent_feats 5b x sent_feature_dim
     # train_phase bool (Should be True.)
     # im_labels 5b x b
-    i_embed, s_embed = embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    i_embed, s_embed,attr = embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    attr_loss=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr,labels=sent_feats)
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
-    return loss
+    return loss+attr_loss
 
    
 def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):
