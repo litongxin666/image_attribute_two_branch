@@ -21,7 +21,7 @@ def eval_once(data_loader, saver, placeholders,sess):
         #if FLAGS.restore_path.endswith('.meta'):
         #    ckpt_path = FLAGS.restore_path.replace('.meta', '')
         #else:
-    ckpt_path = tf.train.latest_checkpoint("/home/litongxin/image_attribute_two_branch/checkpoint/normal")
+    ckpt_path = tf.train.latest_checkpoint("/home/litongxin/image_attribute_two_branch/checkpoint/normalnew")
     print('Restoring checkpoint', ckpt_path)
     saver = tf.train.import_meta_graph(ckpt_path + '.meta')
     saver.restore(sess,ckpt_path)
@@ -35,7 +35,7 @@ def eval_once(data_loader, saver, placeholders,sess):
     # Setup placeholders for input variables.
     im_feat_plh_t = tf.placeholder(tf.float32, shape=[num_ims_t, im_feat_dim_t])
     attr_feat_plh_t = tf.placeholder(tf.float32, shape=[num_attr_t, attr_feat_dim_t])
-    label_plh_t = tf.placeholder(tf.bool, shape=[1414,707])
+    label_plh_t = tf.placeholder(tf.bool, shape=[2828,707])
     train_phase_plh_t = tf.placeholder(tf.bool)
     placeholders = {
         'im_feat_t' : im_feat_plh_t,
@@ -46,7 +46,7 @@ def eval_once(data_loader, saver, placeholders,sess):
     # For testing and validation, there should be only one batch with index 0.
     im_feats, attr_feats, labels = data_loader.get_batch(0, 1000, FLAGS.sample_size)
     #print("im_shape",im_feats.shape)
-    #print("attr_shape",len(attr_feats))
+    print("attr_shape",len(attr_feats))
     feed_dict = {
             placeholders['im_feat_t'] : im_feats,
             placeholders['attr_feat_t'] : attr_feats,
@@ -69,7 +69,7 @@ def eval_once(data_loader, saver, placeholders,sess):
             count = count + 1.0
         #return count/data_loader.attr_test_feat_shape[0]
 
-    print(count)
+    print(count/750.0)
 
 def main(_):
     # Load data.
@@ -146,8 +146,8 @@ def main(_):
             if i % steps_per_epoch == 0 and i > 0:
                 print('Saving checkpoint at step %d' % i)
                 saver.save(sess, FLAGS.save_dir, global_step = global_step)
-                if (i // steps_per_epoch)%5==0:
-                    eval_once(data_loader_test, saver, placeholders,sess)
+                #if (i // steps_per_epoch)%5==0:
+                #    eval_once(data_loader_test, saver, placeholders,sess)
 
 if __name__ == '__main__':
     np.random.seed(0)
@@ -160,11 +160,11 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', type=str, help='Directory for saving checkpoints.')
     parser.add_argument('--restore_path', type=str, help='Path to the restoring checkpoint MetaGraph file.')
     # Training parameters.
-    parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training.')
-    parser.add_argument('--sample_size', type=int, default=4, help='Number of positive pair to sample.')
+    parser.add_argument('--batch_size', type=int, default=64, help='Batch size for training.')
+    parser.add_argument('--sample_size', type=int, default=2, help='Number of positive pair to sample.')
     parser.add_argument('--max_num_epoch', type=int, default=30, help='Max number of epochs to train.')
     parser.add_argument('--num_neg_sample', type=int, default=10, help='Number of negative example to sample.')
-    parser.add_argument('--margin', type=float, default=0.01, help='Margin.')
+    parser.add_argument('--margin', type=float, default=0.001, help='Margin.')
     parser.add_argument('--im_loss_factor', type=float, default=1.0,
                         help='Factor multiplied with image loss. Set to 0 for single direction.')
     parser.add_argument('--sent_only_loss_factor', type=float, default=0.5,
