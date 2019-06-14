@@ -51,30 +51,32 @@ def embedding_loss(im_embeds, sent_embeds, im_labels, args):
     neg_pair_dist = tf.reshape(tf.boolean_mask(sent_im_dist, ~im_labels), [num_img, -1])
     im_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
     im_loss = tf.reduce_mean(tf.nn.top_k(im_loss, k=args.num_neg_sample)[0])
+    #im_loss = tf.reduce_mean(im_loss)
     # image loss: attribute, positive image, and negative image
-    #neg_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), ~tf.transpose(im_labels)), [num_attr, -1])
-    #neg_pair_dist = tf.reshape(tf.tile(neg_pair_dist, [1, img_attr_ratio]), [num_img, -1])
-    #sent_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
-    #sent_loss = tf.reduce_mean(tf.nn.top_k(sent_loss, k=args.num_neg_sample)[0])
-
-
-    pos_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), tf.transpose(im_labels)), [num_attr, -1])
-    pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=False)
     neg_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), ~tf.transpose(im_labels)), [num_attr, -1])
-    neg_pair_dist = tf.reduce_max(neg_pair_dist,axis=1,keep_dims=False)
+    neg_pair_dist = tf.reshape(tf.tile(neg_pair_dist, [1, img_attr_ratio]), [num_img, -1])
     sent_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
-    sent_loss=tf.reduce_mean(tf.reduce_sum(sent_loss))
+    sent_loss = tf.reduce_mean(tf.nn.top_k(sent_loss, k=args.num_neg_sample)[0])
+    #sent_loss = tf.reduce_mean(sent_loss)
+
+    #pos_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), tf.transpose(im_labels)), [num_attr, -1])
+    #pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=False)
+    #neg_pair_dist = tf.reshape(tf.boolean_mask(tf.transpose(sent_im_dist), ~tf.transpose(im_labels)), [num_attr, -1])
+    #neg_pair_dist = tf.reduce_max(neg_pair_dist,axis=1,keep_dims=False)
+    #sent_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
+    #sent_loss=tf.reduce_mean(tf.reduce_sum(sent_loss))
 
     # image only loss (neighborhood-preserving constraints)
     sent_sent_dist = pdist(im_embeds, im_embeds)
     sent_sent_mask = tf.reshape(tf.tile(tf.transpose(im_labels), [1, img_attr_ratio]), [num_img, num_img])
     pos_pair_dist = tf.reshape(tf.boolean_mask(sent_sent_dist, sent_sent_mask), [-1, img_attr_ratio])
-    pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=False)
+    pos_pair_dist = tf.reduce_max(pos_pair_dist, axis=1, keep_dims=True)
     neg_pair_dist = tf.reshape(tf.boolean_mask(sent_sent_dist, ~sent_sent_mask), [num_img, -1])
-    neg_pair_dist = tf.reduce_min(neg_pair_dist, axis=1,keep_dims=False)
+    #neg_pair_dist = tf.reduce_min(neg_pair_dist, axis=1,keep_dims=False)
     sent_only_loss = tf.clip_by_value(args.margin + pos_pair_dist - neg_pair_dist, 0, 1e6)
-    #sent_only_loss = tf.reduce_mean(tf.nn.top_k(sent_only_loss, k=args.num_neg_sample)[0])
-    sent_only_loss = tf.reduce_mean(tf.reduce_sum(sent_only_loss))
+    sent_only_loss = tf.reduce_mean(tf.nn.top_k(sent_only_loss, k=args.num_neg_sample)[0])
+    #sent_only_loss = tf.reduce_mean(sent_only_loss)
+    #sent_only_loss = tf.reduce_mean(tf.reduce_sum(sent_only_loss))
 
 
 
@@ -82,20 +84,26 @@ def embedding_loss(im_embeds, sent_embeds, im_labels, args):
 
     #loss = tf.reduce_mean(pos_pair_dist)
     loss = im_loss * args.im_loss_factor + sent_loss + sent_only_loss * args.sent_only_loss_factor
-    #loss = sent_loss + sent_only_loss * args.sent_only_loss_factor
-    #loss = im_loss + sent_only_loss * args.sent_only_loss_factor
+    #loss = im_loss + sent_loss
+    #loss = sent_loss
+    #loss = im_loss * args.im_loss_factor + sent_only_loss * args.sent_only_loss_factor
     return loss
 
 
-def recall_k(im_embeds, sent_embeds, im_labels, ks=None):
+def recall_k(im_embeds, sent_embeds,im_labels, ks=None):
     """
         Compute recall at given ks.
     """
     count=0
     sent_im_dist = pdist(im_embeds, sent_embeds)
+    #print("1",sent_im_dist.shape)
+    #sent_sent_dist_1=pdist(attr1,sent_feats)
+    #print("2",sent_sent_dist_1.shape)
+    #sent_sent_dist_2=pdist(attr2,sent_feats)
+    #dist=sent_im_dist+sent_sent_dist*0.01
     data_loader = DatasetLoader('/home/litongxin/image_attribute_two_branch/img_feat_test.mat',
                   '/home/litongxin/Two_branch_network/two_branch_img_feature.mat', split='eval')
-    pred = tf.nn.top_k(-tf.transpose(sent_im_dist), k=1)[1]
+    pred = tf.nn.top_k(-tf.transpose(sent_im_dist), k=5)[1]
     #for i in range(pred.shape[0]):
     #    im_id = data_loader.im_id[int(pred[i][0])][0]
     #    if im_id == data_loader.attr_test_feats.keys()[i] or \
@@ -115,27 +123,51 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
     # Image branch.
     #is_training = tf.placeholder(dtype=tf.bool, shape=())
     im_fc1 = add_fc(im_feats, fc_dim, train_phase, 'im_embed_1')
+    #im_fc2=add_fc(im_fc1,512,train_phase,'im_embed_2')
+    #im_fc3=add_fc(im_fc2,256,train_phase,'im_embed_3')
     im_fc2 = fully_connected(im_fc1, embed_dim, activation_fn=None,
                              scope = 'im_embed_2')
     i_embed = tf.nn.l2_normalize(im_fc2, 1, epsilon=1e-10)
-    attr = fully_connected(im_fc2,30,activation_fn=None,
-                             scope = 'attr_rec')
+
+    #im_fc3 = fully_connected(i_embed, 30, activation_fn=None,
+    #                         scope = 'im_embed_3')
+    #attr1 = tf.nn.sigmoid(im_fc3,name = 'attr_rec1')
     # Text branch.
-    sent_fc1 = add_fc(sent_feats, 256, train_phase,'sent_embed_1')
-    sent_fc2 = fully_connected(sent_fc1, embed_dim, activation_fn=None,
-                               scope = 'sent_embed_2')
-    s_embed = tf.nn.l2_normalize(sent_fc2, 1, epsilon=1e-10)
-    return i_embed, s_embed,attr
+    #print("type",sent_feats)
+    sent_f=tf.to_int32(sent_feats,name='ToInt32')
+    sent_f=tf.one_hot(sent_f,2)
+    sent_fc0 = add_fc(sent_f, 4, train_phase,'sent_embed_0')
+    print("sent_one_hot",sent_f)
+    #sent_fc0 = add_fc(sent_f,10,train_phase,'sent_embed_0')
+    sent_fc0 = tf.layers.flatten(sent_fc0)
+    print("sent_fc_0",sent_fc0)
+    #sent_fc1 = add_fc(sent_fc0, 128, train_phase,'sent_embed_1')
+    #print("sent_fc1",sent_fc1)
+    sent_fc2 = add_fc(sent_fc0, 256, train_phase,'sent_embed_2')
+    #sent_fc3 = add_fc(sent_fc2,512 , train_phase,'sent_embed_3')
+    #sent_fc4 = add_fc(sent_fc2,1024 , train_phase,'sent_embed_4')
+    sent_fc3 = fully_connected(sent_fc2, embed_dim, activation_fn=None,
+                               scope = 'sent_embed_3')
+    s_embed = tf.nn.l2_normalize(sent_fc3, 1, epsilon=1e-10)
+    #sent_fc3=im_fc3 = fully_connected(s_embed, 30, activation_fn=None,
+    #                         scope = 'sent_embed_3')
+    #attr2 = tf.nn.sigmoid(sent_fc3,name = 'attr_rec2')
+    #attr2 = fully_connected(sent_fc2,30,activation_fn=None,scope = 'attr_rec2')
+    return i_embed, s_embed
 
 
 def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
     # im_feats b x image_feature_dim
     # sent_feats 5b x sent_feature_dim
     # train_phase bool (Should be True.)
-    # im_labels 5b x b
-    i_embed, s_embed,attr = embedding_model(im_feats, sent_feats, train_phase, im_labels)
-    sent_feats = tf.reshape(tf.tile(sent_feats, [1, 4]), [attr.shape[0], -1])
-    attr_loss=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr,labels=sent_feats)
+    # im_labels 5b x 
+    i_embed, s_embed= embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    #attr2 = tf.reshape(tf.tile(attr2, [1, 2]), [attr1.shape[0], -1])
+    #sent_feats_t = tf.reshape(tf.tile(sent_feats, [1, 2]), [attr1.shape[0], -1])
+    #attr_loss_1=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr1,labels=sent_feats_t)
+    #attr_loss_1=tf.reduce_mean(attr_loss_1)
+    #attr_loss_2=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr2,labels=sent_feats_t)
+    #attr_loss_2=tf.reduce_mean(attr_loss_2)
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
     return loss+attr_loss
 
@@ -145,8 +177,9 @@ def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):
     # sent_feats 5b x sent_feature_dim
     # train_phase bool (Should be False.)
     # im_labels 5b x b
-    i_embed, s_embed,attr = embedding_model(im_feats, sent_feats, train_phase, im_labels)
-    recall = recall_k(i_embed, s_embed, im_labels, ks=tf.convert_to_tensor([1,5,10]))
+    i_embed, s_embed = embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    #sent_feats_temp = tf.reshape(tf.tile(sent_feats, [1, 2]), [attr1.shape[0], -1])
+    recall = recall_k(i_embed, s_embed,im_labels, ks=tf.convert_to_tensor([1,5,10]))
     return recall
 
 

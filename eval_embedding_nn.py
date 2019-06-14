@@ -43,15 +43,19 @@ def eval_once(data_loader, saver, placeholders, recall):
         count=0.0
         attr_test_list= sorted(data_loader.attr_test_feats.items(), key=lambda d:d[0]) 
         for i in range(pred.shape[0]):
-            for m in range(1):
+            for m in range(5):
                 im_id = data_loader.im_id[int(pred[i][m])][0]
                 if im_id == attr_test_list[i][0] or \
                     data_loader.attr_test_feats[im_id] == attr_test_list[i][1]:
                     count = count + 1.0
                     break
+                #else:
+                #    print("im_id",im_id,attr_test_list[i][0])
+                #    print("attr_q",data_loader.attr_test_feats[im_id])
+                #    print("attr_r",attr_test_list[i][1])
         #return count/data_loader.attr_test_feat_shape[0]
 
-        print(count)
+        print(count/750.0)
 
 
 def main(_):

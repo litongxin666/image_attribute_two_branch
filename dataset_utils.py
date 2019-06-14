@@ -26,7 +26,7 @@ class DatasetLoader:
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
         attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
-        #print("shape",len(attr_id['attr_id']))
+        print("shape",len(attr_id['attr_id']))
         #print("attr_id",sorted(attr_id['attr_id']))
         #data_sent = h5py.File(sent_feat_path)
         # WARNING: Tanspose is applied if and only if the feature is stored as
@@ -101,36 +101,31 @@ class DatasetLoader:
             attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
             #attr_feat_b.append(self.attr_feats[self.im_feats['img_id'][i]])
         #im_feats_b = self.im_feats[[i // self.sent_im_ratio for i in sample_inds],:]
-        print("len_attr",len(attr_feat_b))
+        #print("len_attr",len(attr_feat_b))
         im_feats_b = []
         for ind in sample_inds:
             # ind is an index for image
             start_ind,end_ind = self.sample_index(ind)
-            #print("start",start_ind)
-            #print("ind",ind)
-            #print("end",end_ind)
-            #start_ind = ind - ind % self.sent_im_ratio
-            #end_ind = start_ind + self.sent_im_ratio
-                #sample_index=np.append(start_ind,end_ind)
-                #pass
-            if end_ind - start_ind >= sample_size:
+            if end_ind-start_ind==1:
+                sample_index=np.append(start_ind,end_ind)
+            else:
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind) if i != ind],
                     sample_size - 1, replace=False)
                 #print("sample",sample_index)
                 sample_index = sorted(np.append(sample_index, ind))
-                im_feats_b.append(self.im_feats[sample_index])
-            else:
-                sample_index=[]
-                count=sample_size-(end_ind-start_ind+1)
-                for i in range(start_ind,end_ind+1):
-                    sample_index.append(i)
-                if count!=0:
-                    for j in range(count):
-                        sample_index.append(ind)
-                im_feats_b.append(self.im_feats[sample_index])
+            im_feats_b.append(self.im_feats[sample_index])
+            #else:
+            #    sample_index=[]
+            #    count=sample_size-(end_ind-start_ind+1)
+            #    for i in range(start_ind,end_ind+1):
+            #        sample_index.append(i)
+            #    if count!=0:
+            #        for j in range(count):
+            #            sample_index.append(ind)
+            #    im_feats_b.append(self.im_feats[sample_index])
             #print("sample",sample_index)
-        print("len_im_feat",len(im_feats_b))
+        #print("len_im_feat",len(im_feats_b))
         im_feats_b = np.concatenate(im_feats_b, axis=0)
         return (im_feats_b, attr_feat_b)
 
@@ -141,7 +136,7 @@ class DatasetLoader:
         while (self.im_id[end_ind][0] == im_id and end_ind < 13114):
             end_ind = end_ind + 1
         end_ind = end_ind - 1
-        if end_ind-start_ind>=5:
+        if end_ind-start_ind>=1:
             return start_ind, end_ind
         else:
             return -1,end_ind
@@ -171,11 +166,11 @@ class DatasetLoader:
     def get_batch(self, batch_index, batch_size, sample_size):
         start_ind = batch_index * batch_size
         end_ind = start_ind + batch_size
-        print("start",start_ind)
-        print("end",end_ind)
+        #print("start",start_ind)
+        #print("end",end_ind)
         if self.split == 'train':
             sample_inds = self.img_inds[start_ind : end_ind]
-            print("len",len(sample_inds))
+            #print("len",len(sample_inds))
             (im_feats, attr_feats) = self.sample_items(sample_inds, sample_size)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
         else:
