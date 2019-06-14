@@ -134,6 +134,7 @@ def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
     # train_phase bool (Should be True.)
     # im_labels 5b x b
     i_embed, s_embed,attr = embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    sent_feats = tf.reshape(tf.tile(sent_feats, [1, 4]), [attr.shape[0], -1])
     attr_loss=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr,labels=sent_feats)
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
     return loss+attr_loss
@@ -144,7 +145,7 @@ def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):
     # sent_feats 5b x sent_feature_dim
     # train_phase bool (Should be False.)
     # im_labels 5b x b
-    i_embed, s_embed = embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    i_embed, s_embed,attr = embedding_model(im_feats, sent_feats, train_phase, im_labels)
     recall = recall_k(i_embed, s_embed, im_labels, ks=tf.convert_to_tensor([1,5,10]))
     return recall
 
