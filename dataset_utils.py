@@ -25,17 +25,17 @@ class DatasetLoader:
         im_id = data_im['img_id']
 
 
-        data_im_age=loadmat(im_feat_age_path)
-        self.img_feats_age = np.array(data_im['img_feat']).astype(np.float32)
-        self.img_id_age = data_im['img_id']
-        self.img_inds_age = list(range(len(self.im_feats_age)))
+        data_im_age=loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_age.mat')
+        self.img_feats_age = np.array(data_im_age['img_feat']).astype(np.float32)
+        self.img_id_age = data_im_age['img_id']
+        self.img_inds_age = list(range(len(self.img_feats_age)))
 
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
         attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
         print("shape",len(attr_id['attr_id']))
 
-        attr_id_age=loadmat('.../attr_age.mat')
+        attr_id_age=loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_age.mat')
         train_attr_age, test_attr_age, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_age.keys():
