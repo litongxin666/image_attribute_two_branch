@@ -169,7 +169,7 @@ def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
     #attr_loss_2=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr2,labels=sent_feats_t)
     #attr_loss_2=tf.reduce_mean(attr_loss_2)
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
-    return loss+attr_loss
+    return loss
 
    
 def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):

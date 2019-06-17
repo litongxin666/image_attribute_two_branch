@@ -23,10 +23,29 @@ class DatasetLoader:
         data_im = loadmat(im_feat_path)
         im_feats = np.array(data_im['img_feat']).astype(np.float32)
         im_id = data_im['img_id']
+
+
+        data_im_age=loadmat(im_feat_age_path)
+        self.img_feats_age = np.array(data_im['img_feat']).astype(np.float32)
+        self.img_id_age = data_im['img_id']
+        self.img_inds_age = list(range(len(self.im_feats_age)))
+
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
         attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
         print("shape",len(attr_id['attr_id']))
+
+        attr_id_age=loadmat('.../attr_age.mat')
+        train_attr_age, test_attr_age, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        attr_id_not = []
+        for j in train_attr_age.keys():
+            if j not in attr_id_age['attr_age']:
+                attr_id_not.append(j)
+        # print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr_age.pop(m)
+        self.train_attr_age=train_attr_age
+
         #print("attr_id",sorted(attr_id['attr_id']))
         #data_sent = h5py.File(sent_feat_path)
         # WARNING: Tanspose is applied if and only if the feature is stored as
@@ -173,6 +192,50 @@ class DatasetLoader:
             #print("len",len(sample_inds))
             (im_feats, attr_feats) = self.sample_items(sample_inds, sample_size)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        else:
+            sample_inds = self.img_inds[start_ind : 13115]
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+            im_feats = self.im_feats
+            attr_feats=[]
+            attr_feats_temp = sorted(self.attr_test_feats)
+            for i in attr_feats_temp:
+                attr_feats.append(self.attr_test_feats[i])
+            labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
+        # Each row of the labels is the label for one sentence,
+        # with corresponding image index sent to True.
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        return(im_feats, attr_feats, labels)
+
+
+    def get_batch_age(self, batch_index, batch_size, sample_size):
+        start_index = batch_index * batch_size
+        end_index = start_index + batch_size
+        sample_inds = self.img_inds[start_index: end_index]
+        #print("start",start_ind)
+        #print("end",end_ind)
+        if self.split == 'train':
+            attr_feats = []
+            im_feats=[]
+            for index in sample_inds:
+                for i in range(4):
+                    self.train_attr_age[self.img_id_age[index]][i]=2.0
+                attr_feats.append(self.train_attr_age[self.img_id_age[index]])
+                im_id = self.img_id_age[index][0]
+                start_ind = index
+                end_ind = index
+                while (self.img_id_age[start_ind][0] == im_id and start_ind >= 0):
+                    start_ind = start_ind - 1
+                start_ind = start_ind + 1
+                while (self.img_id_age[end_ind][0] == im_id and end_ind < mougeshu):
+                    end_ind = end_ind + 1
+                end_ind = end_ind - 1
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind)],
+                    sample_size - 1, replace=False)
+                im_feats.append(self.im_feats[sample_index])
+            im_feats = np.concatenate(im_feats, axis=0)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+            return (im_feats, attr_feats, labels)
         else:
             sample_inds = self.img_inds[start_ind : 13115]
             #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)

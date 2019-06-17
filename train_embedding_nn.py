@@ -128,11 +128,15 @@ def main(_):
             saver.restore(sess, restore_path.replace('.meta', ''))
             print('done')
 
-        for i in range(num_steps):
+        for i in range(num_steps+2):
             if i % steps_per_epoch == 0:
                 # shuffle the indices.
                 data_loader.shuffle_inds()
-            im_feats, attr_feats, labels = data_loader.get_batch(
+            if i >= num_steps:
+                im_feats, attr_feats, labels = data_loader.get_batch_age(
+                    i % steps_per_epoch, FLAGS.batch_size, FLAGS.sample_size)
+            else:
+                im_feats, attr_feats, labels = data_loader.get_batch(
                     i % steps_per_epoch, FLAGS.batch_size, FLAGS.sample_size)
             feed_dict = {
                     im_feat_plh : im_feats,
