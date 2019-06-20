@@ -210,7 +210,7 @@ class DatasetLoader:
     def get_batch_age(self, batch_index, batch_size, sample_size):
         start_index = batch_index * batch_size
         end_index = start_index + batch_size
-        sample_inds = self.img_inds[start_index: end_index]
+        sample_inds = self.img_inds_age[start_index: end_index]
         #print("start",start_ind)
         #print("end",end_ind)
         if self.split == 'train':
@@ -220,6 +220,7 @@ class DatasetLoader:
                 for i in range(4):
                     self.train_attr_age[self.img_id_age[index]][i]=2.0
                 attr_feats.append(self.train_attr_age[self.img_id_age[index]])
+                #attr_feat_b.append(self.attr_feats[self.im_id[i][0]])
                 im_id = self.img_id_age[index][0]
                 start_ind = index
                 end_ind = index
@@ -237,7 +238,7 @@ class DatasetLoader:
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
         else:
-            sample_inds = self.img_inds[start_ind : 13115]
+            sample_inds = self.img_inds[start_index : 13115]
             #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
             im_feats = self.im_feats
             attr_feats=[]
