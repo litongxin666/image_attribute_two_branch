@@ -58,7 +58,7 @@ class DatasetLoader:
         train_attr_backpack, test_attr_backpack, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_backpack.keys():
-            if j not in attr_id_backpack['attr_backpack']:
+            if j not in attr_id_backpack['attr_age']:
                 attr_id_not.append(j)
         # print("not",attr_id_not)
         for m in attr_id_not:
@@ -75,7 +75,7 @@ class DatasetLoader:
         train_attr_bag, test_attr_bag, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_bag.keys():
-            if j not in attr_id_bag['attr_bag']:
+            if j not in attr_id_bag['attr_age']:
                 attr_id_not.append(j)
         # print("not",attr_id_not)
         for m in attr_id_not:
@@ -92,7 +92,7 @@ class DatasetLoader:
         train_attr_handbag, test_attr_handbag, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_handbag.keys():
-            if j not in attr_id_handbag['attr_handbag']:
+            if j not in attr_id_handbag['attr_age']:
                 attr_id_not.append(j)
         # print("not",attr_id_not)
         for m in attr_id_not:
@@ -109,7 +109,7 @@ class DatasetLoader:
         train_attr_up, test_attr_up, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_up.keys():
-            if j not in attr_id_up['attr_up']:
+            if j not in attr_id_up['attr_age']:
                 attr_id_not.append(j)
         # print("not",attr_id_not)
         for m in attr_id_not:
@@ -126,7 +126,7 @@ class DatasetLoader:
         train_attr_down, test_attr_down, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_down.keys():
-            if j not in attr_id_down['attr_down']:
+            if j not in attr_id_down['attr_age']:
                 attr_id_not.append(j)
         # print("not",attr_id_not)
         for m in attr_id_not:
