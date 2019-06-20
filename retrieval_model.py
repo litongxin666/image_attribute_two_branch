@@ -103,7 +103,7 @@ def recall_k(im_embeds, sent_embeds,im_labels, ks=None):
     #dist=sent_im_dist+sent_sent_dist*0.01
     data_loader = DatasetLoader('/home/litongxin/image_attribute_two_branch/img_feat_test.mat',
                   '/home/litongxin/Two_branch_network/two_branch_img_feature.mat', split='eval')
-    pred = tf.nn.top_k(-tf.transpose(sent_im_dist), k=5)[1]
+    pred = tf.nn.top_k(-tf.transpose(sent_im_dist), k=1)[1]
     #for i in range(pred.shape[0]):
     #    im_id = data_loader.im_id[int(pred[i][0])][0]
     #    if im_id == data_loader.attr_test_feats.keys()[i] or \
@@ -137,10 +137,10 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
     sent_f=tf.to_int32(sent_feats,name='ToInt32')
     sent_f=tf.one_hot(sent_f,2)
     sent_fc0 = add_fc(sent_f, 4, train_phase,'sent_embed_0')
-    print("sent_one_hot",sent_f)
+    #print("sent_one_hot",sent_f)
     #sent_fc0 = add_fc(sent_f,10,train_phase,'sent_embed_0')
     sent_fc0 = tf.layers.flatten(sent_fc0)
-    print("sent_fc_0",sent_fc0)
+    #print("sent_fc_0",sent_fc0)
     #sent_fc1 = add_fc(sent_fc0, 128, train_phase,'sent_embed_1')
     #print("sent_fc1",sent_fc1)
     sent_fc2 = add_fc(sent_fc0, 256, train_phase,'sent_embed_2')
@@ -156,12 +156,14 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
     return i_embed, s_embed
 
 
-def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
+def setup_train_model(im_feats, sent_feats,im_feats_age,sent_feats_age, train_phase, im_labels, args):
     # im_feats b x image_feature_dim
     # sent_feats 5b x sent_feature_dim
     # train_phase bool (Should be True.)
     # im_labels 5b x 
     i_embed, s_embed= embedding_model(im_feats, sent_feats, train_phase, im_labels)
+    with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        i_embed_age, s_embed_age= embedding_model(im_feats_age, sent_feats_age, train_phase, im_labels)
     #attr2 = tf.reshape(tf.tile(attr2, [1, 2]), [attr1.shape[0], -1])
     #sent_feats_t = tf.reshape(tf.tile(sent_feats, [1, 2]), [attr1.shape[0], -1])
     #attr_loss_1=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr1,labels=sent_feats_t)
@@ -169,7 +171,8 @@ def setup_train_model(im_feats, sent_feats, train_phase, im_labels, args):
     #attr_loss_2=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr2,labels=sent_feats_t)
     #attr_loss_2=tf.reduce_mean(attr_loss_2)
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
-    return loss
+    loss_age = embedding_loss(i_embed_age, s_embed_age, im_labels, args)
+    return 0.1*loss_age+loss
 
    
 def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):
