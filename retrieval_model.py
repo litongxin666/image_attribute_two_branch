@@ -156,7 +156,9 @@ def embedding_model(im_feats, sent_feats, train_phase, im_labels,
     return i_embed, s_embed
 
 
-def setup_train_model(im_feats, sent_feats,im_feats_age,sent_feats_age, train_phase, im_labels, args):
+def setup_train_model(im_feats, sent_feats,im_feats_age,sent_feats_age, im_feats_backpack,sent_feats_backpack,
+                     im_feats_bag,sent_feats_bag,im_feats_handbag,sent_feats_handbag,im_feats_down,sent_feats_down,
+                     im_feats_up,,sent_feats_up,train_phase, im_labels, args):
     # im_feats b x image_feature_dim
     # sent_feats 5b x sent_feature_dim
     # train_phase bool (Should be True.)
@@ -164,6 +166,11 @@ def setup_train_model(im_feats, sent_feats,im_feats_age,sent_feats_age, train_ph
     i_embed, s_embed= embedding_model(im_feats, sent_feats, train_phase, im_labels)
     with tf.variable_scope(tf.get_variable_scope(), reuse=True):
         i_embed_age, s_embed_age= embedding_model(im_feats_age, sent_feats_age, train_phase, im_labels)
+        i_embed_backpack, s_embed_backpack = embedding_model(im_feats_backpack, sent_feats_backpack, train_phase, im_labels)
+        i_embed_bag, s_embed_bag = embedding_model(im_feats_bag, sent_feats_bag, train_phase, im_labels)
+        i_embed_handbag, s_embed_handbag = embedding_model(im_feats_handbag, sent_feats_handbag, train_phase, im_labels)
+        i_embed_down, s_embed_down = embedding_model(im_feats_down, sent_feats_down, train_phase, im_labels)
+        i_embed_up, s_embed_up = embedding_model(im_feats_up, sent_feats_up, train_phase, im_labels)
     #attr2 = tf.reshape(tf.tile(attr2, [1, 2]), [attr1.shape[0], -1])
     #sent_feats_t = tf.reshape(tf.tile(sent_feats, [1, 2]), [attr1.shape[0], -1])
     #attr_loss_1=tf.nn.sigmoid_cross_entropy_with_logits(logits=attr1,labels=sent_feats_t)
@@ -172,7 +179,12 @@ def setup_train_model(im_feats, sent_feats,im_feats_age,sent_feats_age, train_ph
     #attr_loss_2=tf.reduce_mean(attr_loss_2)
     loss = embedding_loss(i_embed, s_embed, im_labels, args)
     loss_age = embedding_loss(i_embed_age, s_embed_age, im_labels, args)
-    return 0.1*loss_age+loss
+    loss_backpack = embedding_loss(i_embed_backpack, s_embed_backpack, im_labels, args)
+    loss_bag = embedding_loss(i_embed_bag, s_embed_bag, im_labels, args)
+    loss_handbag = embedding_loss(i_embed_handbag, s_embed_handbag, im_labels, args)
+    loss_down = embedding_loss(i_embed_down, s_embed_down, im_labels, args)
+    loss_up = embedding_loss(i_embed_up, s_embed_up, im_labels, args)
+    return 0.1*loss_age+0.1*loss_backpack+0.1*loss_bag+0.1*loss_handbag+0.1*loss_down+0.1*loss_up+loss
 
    
 def setup_eval_model(im_feats, sent_feats, train_phase, im_labels):

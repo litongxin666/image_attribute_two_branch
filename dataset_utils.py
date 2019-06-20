@@ -32,9 +32,11 @@ class DatasetLoader:
         print("age_len",data_im_age['img_feat'])
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
+
         attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
         print("shape",len(attr_id['attr_id']))
 
+        #age
         attr_id_age=loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_age.mat')
         train_attr_age, test_attr_age, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
@@ -46,6 +48,90 @@ class DatasetLoader:
             train_attr_age.pop(m)
         self.train_attr_age=train_attr_age
 
+        #backpack
+        data_im_backpack = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_backpack.mat')
+        self.img_feats_backpack = np.array(data_im_backpack['img_feat']).astype(np.float32)
+        self.img_id_backpack = data_im_backpack['img_id']
+        self.img_inds_backpack = list(range(len(self.img_feats_backpack)))
+
+        attr_id_backpack = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_backpack.mat')
+        train_attr_backpack, test_attr_backpack, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        attr_id_not = []
+        for j in train_attr_backpack.keys():
+            if j not in attr_id_backpack['attr_backpack']:
+                attr_id_not.append(j)
+        # print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr_backpack.pop(m)
+        self.train_attr_backpack = train_attr_backpack
+
+        #bag
+        data_im_bag = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_bag.mat')
+        self.img_feats_bag = np.array(data_im_bag['img_feat']).astype(np.float32)
+        self.img_id_bag = data_im_bag['img_id']
+        self.img_inds_bag = list(range(len(self.img_feats_bag)))
+
+        attr_id_bag = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_bag.mat')
+        train_attr_bag, test_attr_bag, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        attr_id_not = []
+        for j in train_attr_bag.keys():
+            if j not in attr_id_bag['attr_bag']:
+                attr_id_not.append(j)
+        # print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr_bag.pop(m)
+        self.train_attr_bag = train_attr_bag
+
+        #handbag
+        data_im_handbag = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_handbag.mat')
+        self.img_feats_handbag = np.array(data_im_handbag['img_feat']).astype(np.float32)
+        self.img_id_handbag = data_im_handbag['img_id']
+        self.img_inds_handbag = list(range(len(self.img_feats_handbag)))
+
+        attr_id_handbag = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_handbag.mat')
+        train_attr_handbag, test_attr_handbag, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        attr_id_not = []
+        for j in train_attr_handbag.keys():
+            if j not in attr_id_handbag['attr_handbag']:
+                attr_id_not.append(j)
+        # print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr_handbag.pop(m)
+        self.train_attr_handbag = train_attr_handbag
+
+        #up
+        data_im_up = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_up.mat')
+        self.img_feats_up = np.array(data_im_up['img_feat']).astype(np.float32)
+        self.img_id_up = data_im_up['img_id']
+        self.img_inds_up = list(range(len(self.img_feats_up)))
+
+        attr_id_up = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_up.mat')
+        train_attr_up, test_attr_up, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        attr_id_not = []
+        for j in train_attr_up.keys():
+            if j not in attr_id_up['attr_up']:
+                attr_id_not.append(j)
+        # print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr_up.pop(m)
+        self.train_attr_up = train_attr_up
+
+        #down
+        data_im_down = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_down.mat')
+        self.img_feats_down = np.array(data_im_down['img_feat']).astype(np.float32)
+        self.img_id_down = data_im_down['img_id']
+        self.img_inds_down = list(range(len(self.img_feats_down)))
+
+        attr_id_down = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_down.mat')
+        train_attr_down, test_attr_down, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        attr_id_not = []
+        for j in train_attr_down.keys():
+            if j not in attr_id_down['attr_down']:
+                attr_id_not.append(j)
+        # print("not",attr_id_not)
+        for m in attr_id_not:
+            train_attr_down.pop(m)
+        self.train_attr_down = train_attr_down
         #print("attr_id",sorted(attr_id['attr_id']))
         #data_sent = h5py.File(sent_feat_path)
         # WARNING: Tanspose is applied if and only if the feature is stored as
@@ -230,6 +316,246 @@ class DatasetLoader:
                     start_ind = start_ind - 1
                 start_ind = start_ind + 1
                 while (self.img_id_age[end_ind][0] == im_id and end_ind < 1322):
+                    end_ind = end_ind + 1
+                end_ind = end_ind - 1
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind)],
+                    sample_size - 1, replace=False)
+                im_feats.append(self.im_feats[sample_index])
+            im_feats = np.concatenate(im_feats, axis=0)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+            return (im_feats, attr_feats, labels)
+        #else:
+        #    sample_inds = self.img_inds[start_ind : 13115]
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        #    im_feats = self.im_feats
+        #    attr_feats=[]
+        #    attr_feats_temp = sorted(self.attr_test_feats)
+        #    for i in attr_feats_temp:
+        #        attr_feats.append(self.attr_test_feats[i])
+        #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
+        # Each row of the labels is the label for one sentence,
+        # with corresponding image index sent to True.
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats,attr_feats,labels)
+        return(im_feats, attr_feats, labels)
+
+
+    def get_batch_backpack(self, batch_index, batch_size, sample_size):
+        #start_index = batch_index * batch_size
+        #end_index = start_index + batch_size
+        start_index=0
+        end_index=128
+        sample_inds = self.img_inds_backpack[start_index: end_index]
+        #print("start",start_ind)
+        #print("end",end_ind)
+        if self.split == 'train':
+            attr_feats = []
+            im_feats=[]
+            for index in sample_inds:
+                #for i in range(4):
+                self.train_attr_backpack[self.img_id_backpack[index][0]][4]=2
+                if index%2==0:
+                    attr_feats.append(self.train_attr_backpack[self.img_id_backpack[index][0]])
+                im_id = self.img_id_backpack[index][0]
+                start_ind = index
+                end_ind = index
+                while (self.img_id_backpack[start_ind][0] == im_id and start_ind >= 0):
+                    start_ind = start_ind - 1
+                start_ind = start_ind + 1
+                while (self.img_id_backpack[end_ind][0] == im_id and end_ind < 1322):
+                    end_ind = end_ind + 1
+                end_ind = end_ind - 1
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind)],
+                    sample_size - 1, replace=False)
+                im_feats.append(self.im_feats[sample_index])
+            im_feats = np.concatenate(im_feats, axis=0)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+            return (im_feats, attr_feats, labels)
+        #else:
+        #    sample_inds = self.img_inds[start_ind : 13115]
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        #    im_feats = self.im_feats
+        #    attr_feats=[]
+        #    attr_feats_temp = sorted(self.attr_test_feats)
+        #    for i in attr_feats_temp:
+        #        attr_feats.append(self.attr_test_feats[i])
+        #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
+        # Each row of the labels is the label for one sentence,
+        # with corresponding image index sent to True.
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats,attr_feats,labels)
+        return(im_feats, attr_feats, labels)
+
+
+    def get_batch_bag(self, batch_index, batch_size, sample_size):
+        #start_index = batch_index * batch_size
+        #end_index = start_index + batch_size
+        start_index=0
+        end_index=128
+        sample_inds = self.img_inds_bag[start_index: end_index]
+        #print("start",start_ind)
+        #print("end",end_ind)
+        if self.split == 'train':
+            attr_feats = []
+            im_feats=[]
+            for index in sample_inds:
+                #for i in range(4):
+                self.train_attr_bag[self.img_id_bag[index][0]][5]=2
+                if index%2==0:
+                    attr_feats.append(self.train_attr_bag[self.img_id_bag[index][0]])
+                im_id = self.img_id_bag[index][0]
+                start_ind = index
+                end_ind = index
+                while (self.img_id_bag[start_ind][0] == im_id and start_ind >= 0):
+                    start_ind = start_ind - 1
+                start_ind = start_ind + 1
+                while (self.img_id_bag[end_ind][0] == im_id and end_ind < 1322):
+                    end_ind = end_ind + 1
+                end_ind = end_ind - 1
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind)],
+                    sample_size - 1, replace=False)
+                im_feats.append(self.im_feats[sample_index])
+            im_feats = np.concatenate(im_feats, axis=0)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+            return (im_feats, attr_feats, labels)
+        #else:
+        #    sample_inds = self.img_inds[start_ind : 13115]
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        #    im_feats = self.im_feats
+        #    attr_feats=[]
+        #    attr_feats_temp = sorted(self.attr_test_feats)
+        #    for i in attr_feats_temp:
+        #        attr_feats.append(self.attr_test_feats[i])
+        #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
+        # Each row of the labels is the label for one sentence,
+        # with corresponding image index sent to True.
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats,attr_feats,labels)
+        return(im_feats, attr_feats, labels)
+
+
+    def get_batch_handbag(self, batch_index, batch_size, sample_size):
+        #start_index = batch_index * batch_size
+        #end_index = start_index + batch_size
+        start_index=0
+        end_index=128
+        sample_inds = self.img_inds_handbag[start_index: end_index]
+        #print("start",start_ind)
+        #print("end",end_ind)
+        if self.split == 'train':
+            attr_feats = []
+            im_feats=[]
+            for index in sample_inds:
+                #for i in range(4):
+                self.train_attr_handbag[self.img_id_handbag[index][0]][6]=2
+                if index%2==0:
+                    attr_feats.append(self.train_attr_handbag[self.img_id_handbag[index][0]])
+                im_id = self.img_id_handbag[index][0]
+                start_ind = index
+                end_ind = index
+                while (self.img_id_handbag[start_ind][0] == im_id and start_ind >= 0):
+                    start_ind = start_ind - 1
+                start_ind = start_ind + 1
+                while (self.img_id_handbag[end_ind][0] == im_id and end_ind < 1322):
+                    end_ind = end_ind + 1
+                end_ind = end_ind - 1
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind)],
+                    sample_size - 1, replace=False)
+                im_feats.append(self.im_feats[sample_index])
+            im_feats = np.concatenate(im_feats, axis=0)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+            return (im_feats, attr_feats, labels)
+        #else:
+        #    sample_inds = self.img_inds[start_ind : 13115]
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        #    im_feats = self.im_feats
+        #    attr_feats=[]
+        #    attr_feats_temp = sorted(self.attr_test_feats)
+        #    for i in attr_feats_temp:
+        #        attr_feats.append(self.attr_test_feats[i])
+        #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
+        # Each row of the labels is the label for one sentence,
+        # with corresponding image index sent to True.
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats,attr_feats,labels)
+        return(im_feats, attr_feats, labels)
+
+
+    def get_batch_down(self, batch_index, batch_size, sample_size):
+        #start_index = batch_index * batch_size
+        #end_index = start_index + batch_size
+        start_index=0
+        end_index=128
+        sample_inds = self.img_inds_down[start_index: end_index]
+        #print("start",start_ind)
+        #print("end",end_ind)
+        if self.split == 'train':
+            attr_feats = []
+            im_feats=[]
+            for index in sample_inds:
+                for i in range(7,16):
+                    self.train_attr_down[self.img_id_down[index][0]][i]=2
+                if index%2==0:
+                    attr_feats.append(self.train_attr_down[self.img_id_down[index][0]])
+                im_id = self.img_id_down[index][0]
+                start_ind = index
+                end_ind = index
+                while (self.img_id_down[start_ind][0] == im_id and start_ind >= 0):
+                    start_ind = start_ind - 1
+                start_ind = start_ind + 1
+                while (self.img_id_down[end_ind][0] == im_id and end_ind < 1322):
+                    end_ind = end_ind + 1
+                end_ind = end_ind - 1
+                sample_index = np.random.choice(
+                    [i for i in range(start_ind, end_ind)],
+                    sample_size - 1, replace=False)
+                im_feats.append(self.im_feats[sample_index])
+            im_feats = np.concatenate(im_feats, axis=0)
+            labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+            return (im_feats, attr_feats, labels)
+        #else:
+        #    sample_inds = self.img_inds[start_ind : 13115]
+            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        #    im_feats = self.im_feats
+        #    attr_feats=[]
+        #    attr_feats_temp = sorted(self.attr_test_feats)
+        #    for i in attr_feats_temp:
+        #        attr_feats.append(self.attr_test_feats[i])
+        #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
+        # Each row of the labels is the label for one sentence,
+        # with corresponding image index sent to True.
+        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats,attr_feats,labels)
+        return(im_feats, attr_feats, labels)
+
+
+    def get_batch_up(self, batch_index, batch_size, sample_size):
+        #start_index = batch_index * batch_size
+        #end_index = start_index + batch_size
+        start_index=0
+        end_index=128
+        sample_inds = self.img_inds_up[start_index: end_index]
+        #print("start",start_ind)
+        #print("end",end_ind)
+        if self.split == 'train':
+            attr_feats = []
+            im_feats=[]
+            for index in sample_inds:
+                for i in range(16,24):
+                    self.train_attr_up[self.img_id_up[index][0]][i]=2
+                if index%2==0:
+                    attr_feats.append(self.train_attr_up[self.img_id_up[index][0]])
+                im_id = self.img_id_up[index][0]
+                start_ind = index
+                end_ind = index
+                while (self.img_id_up[start_ind][0] == im_id and start_ind >= 0):
+                    start_ind = start_ind - 1
+                start_ind = start_ind + 1
+                while (self.img_id_up[end_ind][0] == im_id and end_ind < 1322):
                     end_ind = end_ind + 1
                 end_ind = end_ind - 1
                 sample_index = np.random.choice(

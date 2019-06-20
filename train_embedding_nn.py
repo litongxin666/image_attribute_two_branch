@@ -84,13 +84,28 @@ def main(_):
     # Setup placeholders for input variables.
     im_feat_plh_age = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
     attr_feat_plh_age = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
+    im_feat_plh_backpack = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh_backpack = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
+    im_feat_plh_bag = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh_bag = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
+    im_feat_plh_handbag = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh_handbag = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
+    im_feat_plh_down = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh_down = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
+    im_feat_plh_up = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh_up = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
+
     im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
     attr_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
     label_plh = tf.placeholder(tf.bool, shape=[FLAGS.batch_size * FLAGS.sample_size, FLAGS.batch_size])
     train_phase_plh = tf.placeholder(tf.bool)
 
     # Setup training operation.
-    loss = setup_train_model(im_feat_plh, attr_feat_plh,im_feat_plh_age,attr_feat_plh_age, train_phase_plh, label_plh, FLAGS)
+    loss = setup_train_model(im_feat_plh, attr_feat_plh,im_feat_plh_age,attr_feat_plh_age,
+                             im_feat_plh_backpack,attr_feat_plh_backpack, im_feat_plh_bag,attr_feat_plh_bag,
+                             im_feat_plh_handbag, attr_feat_plh_handbag,im_feat_plh_down, attr_feat_plh_down,
+                             im_feat_plh_up, attr_feat_plh_up,
+                             train_phase_plh, label_plh, FLAGS)
 
     # Setup optimizer.
     global_step = tf.Variable(0, trainable=False)
@@ -136,6 +151,16 @@ def main(_):
                 data_loader.shuffle_inds()
             im_feats_age, attr_feats_age, labels_age = data_loader.get_batch_age(
                     0, FLAGS.batch_size, FLAGS.sample_size)
+            im_feats_backpack, attr_feats_backpack, labels_backpack = data_loader.get_batch_backpack(
+                0, FLAGS.batch_size, FLAGS.sample_size)
+            im_feats_bag, attr_feats_bag, labels_bag = data_loader.get_batch_bag(
+                0, FLAGS.batch_size, FLAGS.sample_size)
+            im_feats_handbag, attr_feats_handbag, labels_handbag = data_loader.get_batch_handbag(
+                0, FLAGS.batch_size, FLAGS.sample_size)
+            im_feats_down, attr_feats_down, labels_down = data_loader.get_batch_down(
+                0, FLAGS.batch_size, FLAGS.sample_size)
+            im_feats_up, attr_feats_up, labels_up = data_loader.get_batch_up(
+                0, FLAGS.batch_size, FLAGS.sample_size)
             #feed_dict = {
             #        im_feat_plh : im_feats_age,
             #        attr_feat_plh : attr_feats_age,
@@ -156,6 +181,16 @@ def main(_):
                     attr_feat_plh : attr_feats,
                     im_feat_plh_age:im_feats_age,
                     attr_feat_plh_age:attr_feats_age,
+                    im_feat_plh_backpack: im_feats_backpack,
+                    attr_feat_plh_backpack: attr_feats_backpack,
+                    im_feat_plh_bag: im_feats_bag,
+                    attr_feat_plh_bag: attr_feats_bag,
+                    im_feat_plh_handbag: im_feats_handbag,
+                    attr_feat_plh_handbag: attr_feats_handbag,
+                    im_feat_plh_down: im_feats_down,
+                    attr_feat_plh_down: attr_feats_down,
+                    im_feat_plh_up: im_feats_up,
+                    attr_feat_plh_up: attr_feats_up,
                     label_plh : labels,
                     train_phase_plh : True,
             }
