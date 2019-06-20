@@ -82,13 +82,15 @@ def main(_):
     #print("attr_shape",data_loader.attr_feat_shape)
 
     # Setup placeholders for input variables.
+    im_feat_plh_age = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
+    attr_feat_plh_age = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
     im_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size * FLAGS.sample_size, im_feat_dim])
     attr_feat_plh = tf.placeholder(tf.float32, shape=[FLAGS.batch_size, attr_feat_dim])
     label_plh = tf.placeholder(tf.bool, shape=[FLAGS.batch_size * FLAGS.sample_size, FLAGS.batch_size])
     train_phase_plh = tf.placeholder(tf.bool)
 
     # Setup training operation.
-    loss = setup_train_model(im_feat_plh, attr_feat_plh, train_phase_plh, label_plh, FLAGS)
+    loss = setup_train_model(im_feat_plh, attr_feat_plh,im_feat_plh_age,attr_feat_plh_age, train_phase_plh, label_plh, FLAGS)
 
     # Setup optimizer.
     global_step = tf.Variable(0, trainable=False)
@@ -128,19 +130,32 @@ def main(_):
             saver.restore(sess, restore_path.replace('.meta', ''))
             print('done')
 
-        for i in range(num_steps+2):
+        for i in range(num_steps):
             if i % steps_per_epoch == 0:
                 # shuffle the indices.
                 data_loader.shuffle_inds()
-            if i >= num_steps:
-                im_feats, attr_feats, labels = data_loader.get_batch_age(
+            im_feats_age, attr_feats_age, labels_age = data_loader.get_batch_age(
+                    0, FLAGS.batch_size, FLAGS.sample_size)
+            #feed_dict = {
+            #        im_feat_plh : im_feats_age,
+            #        attr_feat_plh : attr_feats_age,
+            #        label_plh : labels_age,
+            #        train_phase_plh : True,
+            #}
+            #[_, loss_val] = sess.run([train_step, loss], feed_dict = feed_dict)
+           
+            #if i >= num_steps:
+            #    im_feats, attr_feats, labels = data_loader.get_batch_age(
+            #        i % steps_per_epoch, FLAGS.batch_size, FLAGS.sample_size)
+            #    print(im_feats,attr_feats)
+            im_feats, attr_feats, labels = data_loader.get_batch(
                     i % steps_per_epoch, FLAGS.batch_size, FLAGS.sample_size)
-            else:
-                im_feats, attr_feats, labels = data_loader.get_batch(
-                    i % steps_per_epoch, FLAGS.batch_size, FLAGS.sample_size)
+                #print(im_feats,attr_feats)
             feed_dict = {
                     im_feat_plh : im_feats,
                     attr_feat_plh : attr_feats,
+                    im_feat_plh_age:im_feats_age,
+                    attr_feat_plh_age:attr_feats_age,
                     label_plh : labels,
                     train_phase_plh : True,
             }
@@ -166,7 +181,7 @@ if __name__ == '__main__':
     # Training parameters.
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size for training.')
     parser.add_argument('--sample_size', type=int, default=2, help='Number of positive pair to sample.')
-    parser.add_argument('--max_num_epoch', type=int, default=30, help='Max number of epochs to train.')
+    parser.add_argument('--max_num_epoch', type=int, default=50, help='Max number of epochs to train.')
     parser.add_argument('--num_neg_sample', type=int, default=10, help='Number of negative example to sample.')
     parser.add_argument('--margin', type=float, default=0.001, help='Margin.')
     parser.add_argument('--im_loss_factor', type=float, default=1.0,

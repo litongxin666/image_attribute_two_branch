@@ -28,8 +28,11 @@ def eval_once(data_loader, saver, placeholders, recall):
 
         # For testing and validation, there should be only one batch with index 0.
         im_feats, attr_feats, labels = data_loader.get_batch(0, FLAGS.batch_size, FLAGS.sample_size)
-        print("im_shape",im_feats.shape)
-        print("attr_shape",len(attr_feats))
+        for i in range(len(attr_feats)):
+            for j in range(4):
+                attr_feats[i][j]=2
+        #print("im_shape",im_feats.shape)
+        #print("attr_shape",attr_feats)
         feed_dict = {
                 placeholders['im_feat'] : im_feats,
                 placeholders['attr_feat'] : attr_feats,
@@ -43,10 +46,10 @@ def eval_once(data_loader, saver, placeholders, recall):
         count=0.0
         attr_test_list= sorted(data_loader.attr_test_feats.items(), key=lambda d:d[0]) 
         for i in range(pred.shape[0]):
-            for m in range(5):
+            for m in range(1):
                 im_id = data_loader.im_id[int(pred[i][m])][0]
                 if im_id == attr_test_list[i][0] or \
-                    data_loader.attr_test_feats[im_id] == attr_test_list[i][1]:
+                    data_loader.attr_test_feats[im_id][4:] == attr_test_list[i][1][4:]:
                     count = count + 1.0
                     break
                 #else:
