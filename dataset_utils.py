@@ -29,7 +29,7 @@ class DatasetLoader:
         self.img_feats_age = np.array(data_im_age['img_feat']).astype(np.float32)
         self.img_id_age = data_im_age['img_id']
         self.img_inds_age = list(range(len(self.img_feats_age)))
-        print("age_len",data_im_age['img_feat'])
+        #print("age_len",data_im_age['img_feat'])
         print('Loaded image feature shape:', im_feats.shape)
         print('Loading sentence features from', sent_feat_path)
 
@@ -38,7 +38,12 @@ class DatasetLoader:
 
         #age
         attr_id_age=loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_age.mat')
+        #attr_id_age=attr_id_age['attr_age']
+        self.attr_id_age=attr_id_age
+        #print("attr_id_age",attr_id_age['attr_age'][0])
+        self.attr_inds_age = list(range(len(self.attr_id_age['attr_age'])))
         train_attr_age, test_attr_age, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        #print("-----------------labels",self.label)
         attr_id_not = []
         for j in train_attr_age.keys():
             if j not in attr_id_age['attr_age']:
@@ -107,6 +112,10 @@ class DatasetLoader:
 
         attr_id_up = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_up.mat')
         train_attr_up, test_attr_up, self.label = import_Market1501Attribute_binary('/home/litongxin')
+        self.attr_id_up=attr_id_up
+        #print("attr_id_age",attr_id_age['attr_age'][0])
+        self.attr_inds_up = list(range(len(self.attr_id_up['attr_age'])))
+
         attr_id_not = []
         for j in train_attr_up.keys():
             if j not in attr_id_up['attr_age']:
@@ -177,6 +186,7 @@ class DatasetLoader:
         '''
         if self.split == 'train':
             np.random.shuffle(self.img_inds)
+            np.random.shuffle(self.attr_inds_age)
             #np.random.shuffle(self.im_inds)
 
     def sample_index(self, index):
@@ -296,9 +306,13 @@ class DatasetLoader:
     def get_batch_age(self, batch_index, batch_size, sample_size):
         #start_index = batch_index * batch_size
         #end_index = start_index + batch_size
+        #print(start_index,end_index)
+        #if end_index>len(self.img_feats_age):
+        #    start_index=start_index%len(self.img_feats_age)
+        #    end_index = start_index + batch_size
         start_index=0
-        end_index=128
-        sample_inds = self.img_inds_age[start_index: end_index]
+        end_index=64
+        sample_inds = self.attr_inds_age[start_index: end_index]
         #print("start",start_ind)
         #print("end",end_ind)
         if self.split == 'train':
@@ -306,22 +320,39 @@ class DatasetLoader:
             im_feats=[]
             for index in sample_inds:
                 for i in range(4):
-                    self.train_attr_age[self.img_id_age[index][0]][i]=2
+                    self.train_attr_age[self.attr_id_age['attr_age'][index]][i]=2
+                #if m%2==0:
+                attr_feats.append(self.train_attr_age[self.attr_id_age['attr_age'][index]])
+                id_loc=[]
                 if index%2==0:
-                    attr_feats.append(self.train_attr_age[self.img_id_age[index][0]])
-                im_id = self.img_id_age[index][0]
-                start_ind = index
-                end_ind = index
-                while (self.img_id_age[start_ind][0] == im_id and start_ind >= 0):
-                    start_ind = start_ind - 1
-                start_ind = start_ind + 1
-                while (self.img_id_age[end_ind][0] == im_id and end_ind < 1322):
-                    end_ind = end_ind + 1
-                end_ind = end_ind - 1
-                sample_index = np.random.choice(
-                    [i for i in range(start_ind, end_ind)],
-                    sample_size - 1, replace=False)
-                im_feats.append(self.im_feats[sample_index])
+                   id_loc.append(index)
+                   id_loc.append(index+1)
+                else:
+                    id_loc.append(index-1)
+                    id_loc.append(index)
+                for loc in id_loc:
+
+                    im_id = self.attr_id_age['attr_age'][loc]
+                    start_ind=0
+                    end_ind=0
+                    for k in range(len(self.img_feats_age)):
+                        if self.img_id_age[k][0] != im_id:
+                            start_ind=start_ind+1
+                        if self.img_id_age[k][0] == im_id:
+                            end_ind=end_ind+1
+                    end_ind=start_ind+end_ind-1
+                #start_ind = index
+                #end_ind = index
+                #while (self.img_id_age[start_ind][0] == im_id and start_ind >= 0):
+                #    start_ind = start_ind - 1
+                #start_ind = start_ind + 1
+                #while (self.img_id_age[end_ind][0] == im_id and end_ind < len(self.img_feats_age)-1):
+                #    end_ind = end_ind + 1
+                #end_ind = end_ind - 1
+                    sample_index = np.random.choice(
+                        [i for i in range(start_ind, end_ind)],
+                        sample_size - 1, replace=False)
+                    im_feats.append(self.img_feats_age[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
@@ -369,7 +400,7 @@ class DatasetLoader:
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind)],
                     sample_size - 1, replace=False)
-                im_feats.append(self.im_feats[sample_index])
+                im_feats.append(self.img_feats_backpack[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
@@ -417,7 +448,7 @@ class DatasetLoader:
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind)],
                     sample_size - 1, replace=False)
-                im_feats.append(self.im_feats[sample_index])
+                im_feats.append(self.img_feats_bag[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
@@ -465,7 +496,7 @@ class DatasetLoader:
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind)],
                     sample_size - 1, replace=False)
-                im_feats.append(self.im_feats[sample_index])
+                im_feats.append(self.img_feats_handbag[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
@@ -497,7 +528,7 @@ class DatasetLoader:
             attr_feats = []
             im_feats=[]
             for index in sample_inds:
-                for i in range(7,16):
+                for i in range(21,30):
                     self.train_attr_down[self.img_id_down[index][0]][i]=2
                 if index%2==0:
                     attr_feats.append(self.train_attr_down[self.img_id_down[index][0]])
@@ -507,13 +538,13 @@ class DatasetLoader:
                 while (self.img_id_down[start_ind][0] == im_id and start_ind >= 0):
                     start_ind = start_ind - 1
                 start_ind = start_ind + 1
-                while (self.img_id_down[end_ind][0] == im_id and end_ind < 1322):
+                while (self.img_id_down[end_ind][0] == im_id and end_ind < len(self.img_feats_down)):
                     end_ind = end_ind + 1
                 end_ind = end_ind - 1
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind)],
                     sample_size - 1, replace=False)
-                im_feats.append(self.im_feats[sample_index])
+                im_feats.append(self.img_feats_down[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
@@ -545,7 +576,7 @@ class DatasetLoader:
             attr_feats = []
             im_feats=[]
             for index in sample_inds:
-                for i in range(16,24):
+                for i in range(13,21):
                     self.train_attr_up[self.img_id_up[index][0]][i]=2
                 if index%2==0:
                     attr_feats.append(self.train_attr_up[self.img_id_up[index][0]])
@@ -555,13 +586,13 @@ class DatasetLoader:
                 while (self.img_id_up[start_ind][0] == im_id and start_ind >= 0):
                     start_ind = start_ind - 1
                 start_ind = start_ind + 1
-                while (self.img_id_up[end_ind][0] == im_id and end_ind < 1322):
+                while (self.img_id_up[end_ind][0] == im_id and end_ind < len(self.img_feats_up)):
                     end_ind = end_ind + 1
                 end_ind = end_ind - 1
                 sample_index = np.random.choice(
                     [i for i in range(start_ind, end_ind)],
                     sample_size - 1, replace=False)
-                im_feats.append(self.im_feats[sample_index])
+                im_feats.append(self.img_feats_up[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
