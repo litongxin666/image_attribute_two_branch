@@ -187,6 +187,7 @@ class DatasetLoader:
         if self.split == 'train':
             np.random.shuffle(self.img_inds)
             np.random.shuffle(self.attr_inds_age)
+            np.random.shuffle(self.attr_inds_up)
             #np.random.shuffle(self.im_inds)
 
     def sample_index(self, index):
@@ -565,40 +566,55 @@ class DatasetLoader:
 
 
     def get_batch_up(self, batch_index, batch_size, sample_size):
-        #start_index = batch_index * batch_size
-        #end_index = start_index + batch_size
-        start_index=0
-        end_index=128
-        sample_inds = self.img_inds_up[start_index: end_index]
-        #print("start",start_ind)
-        #print("end",end_ind)
+        start_index = 0
+        end_index = 64
+        sample_inds = self.attr_inds_up[start_index: end_index]
+        # print("start",start_ind)
+        # print("end",end_ind)
         if self.split == 'train':
             attr_feats = []
-            im_feats=[]
+            im_feats = []
             for index in sample_inds:
                 for i in range(13,21):
-                    self.train_attr_up[self.img_id_up[index][0]][i]=2
-                if index%2==0:
-                    attr_feats.append(self.train_attr_up[self.img_id_up[index][0]])
-                im_id = self.img_id_up[index][0]
-                start_ind = index
-                end_ind = index
-                while (self.img_id_up[start_ind][0] == im_id and start_ind >= 0):
-                    start_ind = start_ind - 1
-                start_ind = start_ind + 1
-                while (self.img_id_up[end_ind][0] == im_id and end_ind < len(self.img_feats_up)):
-                    end_ind = end_ind + 1
-                end_ind = end_ind - 1
-                sample_index = np.random.choice(
-                    [i for i in range(start_ind, end_ind)],
-                    sample_size - 1, replace=False)
-                im_feats.append(self.img_feats_up[sample_index])
+                    self.train_attr_up[self.attr_id_up['attr_age'][index]][i] = 2
+                # if m%2==0:
+                attr_feats.append(self.train_attr_up[self.attr_id_up['attr_age'][index]])
+                id_loc = []
+                if index % 2 == 0:
+                    id_loc.append(index)
+                    id_loc.append(index + 1)
+                else:
+                    id_loc.append(index - 1)
+                    id_loc.append(index)
+                for loc in id_loc:
+
+                    im_id = self.attr_id_up['attr_age'][loc]
+                    start_ind = 0
+                    end_ind = 0
+                    for k in range(len(self.img_feats_up)):
+                        if self.img_id_up[k][0] != im_id:
+                            start_ind = start_ind + 1
+                        if self.img_id_up[k][0] == im_id:
+                            end_ind = end_ind + 1
+                    end_ind = start_ind + end_ind - 1
+                    # start_ind = index
+                    # end_ind = index
+                    # while (self.img_id_age[start_ind][0] == im_id and start_ind >= 0):
+                    #    start_ind = start_ind - 1
+                    # start_ind = start_ind + 1
+                    # while (self.img_id_age[end_ind][0] == im_id and end_ind < len(self.img_feats_age)-1):
+                    #    end_ind = end_ind + 1
+                    # end_ind = end_ind - 1
+                    sample_index = np.random.choice(
+                        [i for i in range(start_ind, end_ind)],
+                        sample_size - 1, replace=False)
+                    im_feats.append(self.img_feats_up[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
-        #else:
+        # else:
         #    sample_inds = self.img_inds[start_ind : 13115]
-            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        # (im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
         #    im_feats = self.im_feats
         #    attr_feats=[]
         #    attr_feats_temp = sorted(self.attr_test_feats)
@@ -607,6 +623,6 @@ class DatasetLoader:
         #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
         # Each row of the labels is the label for one sentence,
         # with corresponding image index sent to True.
-        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
-        print(im_feats,attr_feats,labels)
-        return(im_feats, attr_feats, labels)
+        # labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats, attr_feats, labels)
+        return (im_feats, attr_feats, labels)
