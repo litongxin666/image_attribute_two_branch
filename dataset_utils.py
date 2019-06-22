@@ -24,19 +24,18 @@ class DatasetLoader:
         im_feats = np.array(data_im['img_feat']).astype(np.float32)
         im_id = data_im['img_id']
         print("im_feats",type(data_im['img_feat']))
+        attr_id = loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
+        print("shape", len(attr_id['attr_id']))
 
+        # age
         data_im_age=loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_age.mat')
         self.img_feats_age = np.array(data_im_age['img_feat']).astype(np.float32)
         self.img_id_age = data_im_age['img_id']
         self.img_inds_age = list(range(len(self.img_feats_age)))
         #print("age_len",data_im_age['img_feat'])
-        print('Loaded image feature shape:', im_feats.shape)
-        print('Loading sentence features from', sent_feat_path)
+        #print('Loaded image feature shape:', im_feats.shape)
+        #print('Loading sentence features from', sent_feat_path)
 
-        attr_id=loadmat("/home/litongxin/image_attribute_two_branch/attr_id.mat")
-        print("shape",len(attr_id['attr_id']))
-
-        #age
         attr_id_age=loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_age.mat')
         #attr_id_age=attr_id_age['attr_age']
         self.attr_id_age=attr_id_age
@@ -52,6 +51,7 @@ class DatasetLoader:
         for m in attr_id_not:
             train_attr_age.pop(m)
         self.train_attr_age=train_attr_age
+
 
         #backpack
         data_im_backpack = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_backpack.mat')
@@ -126,12 +126,15 @@ class DatasetLoader:
         self.train_attr_up = train_attr_up
 
         #down
-        data_im_down = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_down.mat')
+        data_im_down = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/img_down_cloth.mat')
         self.img_feats_down = np.array(data_im_down['img_feat']).astype(np.float32)
         self.img_id_down = data_im_down['img_id']
         self.img_inds_down = list(range(len(self.img_feats_down)))
 
-        attr_id_down = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_down.mat')
+        attr_id_down = loadmat('/home/litongxin/Person-Attribute-Recognition-MarketDuke/datafolder/attr_down_cloth.mat')
+        self.attr_id_down = attr_id_down
+        # print("attr_id_age",attr_id_age['attr_age'][0])
+        self.attr_inds_down = list(range(len(self.attr_id_down['attr_age'])))
         train_attr_down, test_attr_down, self.label = import_Market1501Attribute_binary('/home/litongxin')
         attr_id_not = []
         for j in train_attr_down.keys():
@@ -187,7 +190,7 @@ class DatasetLoader:
         if self.split == 'train':
             np.random.shuffle(self.img_inds)
             np.random.shuffle(self.attr_inds_age)
-            np.random.shuffle(self.attr_inds_up)
+            np.random.shuffle(self.attr_inds_down)
             #np.random.shuffle(self.im_inds)
 
     def sample_index(self, index):
@@ -518,40 +521,55 @@ class DatasetLoader:
 
 
     def get_batch_down(self, batch_index, batch_size, sample_size):
-        #start_index = batch_index * batch_size
-        #end_index = start_index + batch_size
-        start_index=0
-        end_index=128
-        sample_inds = self.img_inds_down[start_index: end_index]
-        #print("start",start_ind)
-        #print("end",end_ind)
+        start_index = 0
+        end_index = 64
+        sample_inds = self.attr_inds_down[start_index: end_index]
+        # print("start",start_ind)
+        # print("end",end_ind)
         if self.split == 'train':
             attr_feats = []
-            im_feats=[]
+            im_feats = []
             for index in sample_inds:
-                for i in range(21,30):
-                    self.train_attr_down[self.img_id_down[index][0]][i]=2
-                if index%2==0:
-                    attr_feats.append(self.train_attr_down[self.img_id_down[index][0]])
-                im_id = self.img_id_down[index][0]
-                start_ind = index
-                end_ind = index
-                while (self.img_id_down[start_ind][0] == im_id and start_ind >= 0):
-                    start_ind = start_ind - 1
-                start_ind = start_ind + 1
-                while (self.img_id_down[end_ind][0] == im_id and end_ind < len(self.img_feats_down)):
-                    end_ind = end_ind + 1
-                end_ind = end_ind - 1
-                sample_index = np.random.choice(
-                    [i for i in range(start_ind, end_ind)],
-                    sample_size - 1, replace=False)
-                im_feats.append(self.img_feats_down[sample_index])
+                #for i in range(13, 21):
+                self.train_attr_down[self.attr_id_down['attr_age'][index]][8] = 2
+                # if m%2==0:
+                attr_feats.append(self.train_attr_down[self.attr_id_down['attr_age'][index]])
+                id_loc = []
+                if index % 2 == 0:
+                    id_loc.append(index)
+                    id_loc.append(index + 1)
+                else:
+                    id_loc.append(index - 1)
+                    id_loc.append(index)
+                for loc in id_loc:
+
+                    im_id = self.attr_id_down['attr_age'][loc]
+                    start_ind = 0
+                    end_ind = 0
+                    for k in range(len(self.img_feats_down)):
+                        if self.img_id_down[k][0] != im_id:
+                            start_ind = start_ind + 1
+                        if self.img_id_down[k][0] == im_id:
+                            end_ind = end_ind + 1
+                    end_ind = start_ind + end_ind - 1
+                    # start_ind = index
+                    # end_ind = index
+                    # while (self.img_id_age[start_ind][0] == im_id and start_ind >= 0):
+                    #    start_ind = start_ind - 1
+                    # start_ind = start_ind + 1
+                    # while (self.img_id_age[end_ind][0] == im_id and end_ind < len(self.img_feats_age)-1):
+                    #    end_ind = end_ind + 1
+                    # end_ind = end_ind - 1
+                    sample_index = np.random.choice(
+                        [i for i in range(start_ind, end_ind)],
+                        sample_size - 1, replace=False)
+                    im_feats.append(self.img_feats_down[sample_index])
             im_feats = np.concatenate(im_feats, axis=0)
             labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
             return (im_feats, attr_feats, labels)
-        #else:
+        # else:
         #    sample_inds = self.img_inds[start_ind : 13115]
-            #(im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
+        # (im_feats,attr_feats) = self.test_sample_items(sample_inds, sample_size)
         #    im_feats = self.im_feats
         #    attr_feats=[]
         #    attr_feats_temp = sorted(self.attr_test_feats)
@@ -560,9 +578,9 @@ class DatasetLoader:
         #    labels = np.repeat(np.eye(707, dtype=bool), sample_size, axis=0)
         # Each row of the labels is the label for one sentence,
         # with corresponding image index sent to True.
-        #labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
-        print(im_feats,attr_feats,labels)
-        return(im_feats, attr_feats, labels)
+        # labels = np.repeat(np.eye(batch_size, dtype=bool), sample_size, axis=0)
+        print(im_feats, attr_feats, labels)
+        return (im_feats, attr_feats, labels)
 
 
     def get_batch_up(self, batch_index, batch_size, sample_size):
